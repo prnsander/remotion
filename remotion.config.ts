@@ -1,13 +1,10 @@
-/**
- * Note: When using the Node.JS APIs, the config file
- * doesn't apply. Instead, pass options directly to the APIs.
- *
- * All configuration options: https://remotion.dev/docs/config
- */
-
 import { Config } from "@remotion/cli/config";
-import { enableTailwind } from '@remotion/tailwind-v4';
+import { enableTailwind } from "@remotion/tailwind-v4";
 
-Config.setVideoImageFormat("jpeg");
+// PNG for lossless intermediate frames at 1920x1080
+Config.setVideoImageFormat("png");
 Config.setOverwriteOutput(true);
 Config.overrideWebpackConfig(enableTailwind);
+
+// Set to your Mac's logical CPU count (run: sysctl -n hw.logicalcpu)
+Config.setConcurrency(8);

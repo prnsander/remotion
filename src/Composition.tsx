@@ -1,3 +1,1 @@
-export const MyComposition = () => {
-  return null;
-};
+export { ProductLaunch as MyComposition } from "./compositions/ProductLaunch";
