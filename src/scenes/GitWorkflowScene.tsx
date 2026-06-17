@@ -9,81 +9,35 @@ import {
 import { C, FONT, MONO } from "./shared/theme";
 import { PurpleWash } from "./shared/PurpleWash";
 import { Vignette } from "./shared/Vignette";
-import { SceneHeader } from "./shared/SceneHeader";
+import { Badge } from "./shared/Badge";
 import { GrainOverlay } from "../components/GrainOverlay";
 
-const IconBox: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div
-    style={{
-      width: 48,
-      height: 48,
-      backgroundColor: "rgba(144,90,246,0.11)",
-      border: "1px solid rgba(144,90,246,0.20)",
-      borderRadius: "12px",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontSize: 22,
-    }}
-  >
-    {children}
-  </div>
-);
-
-const Connector: React.FC = () => {
-  const frame = useCurrentFrame();
-  const dx = interpolate((frame + 20) % 40, [0, 20, 40], [-4, 4, -4]);
-  return (
-    <div
-      style={{
-        width: 60,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "rgba(8,8,14,0.9)",
-        border: "1px solid rgba(255,255,255,0.06)",
-        borderLeft: "none",
-        borderRight: "none",
-        alignSelf: "stretch",
-      }}
-    >
-      <span
-        style={{
-          fontSize: 24,
-          color: "rgba(144,90,246,0.50)",
-          transform: `translateX(${dx}px)`,
-        }}
-      >
-        →
-      </span>
-    </div>
-  );
-};
+// Y position of each node relative to the timeline container top.
+const NODE_Y = [200, 370, 540];
+const STEP_FRAME = [50, 75, 100];
+const NODE_FRAME = [45, 70, 95];
 
 export const GitWorkflowScene: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const card1 = spring({
-    frame: frame - 40,
-    fps,
-    config: { damping: 14, stiffness: 82 },
-  });
-  const card2 = spring({
-    frame: frame - 62,
-    fps,
-    config: { damping: 14, stiffness: 82 },
-  });
-  const card3 = spring({
-    frame: frame - 84,
-    fps,
-    config: { damping: 14, stiffness: 82 },
+  const badgeOpacity = interpolate(frame, [0, 14], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
   });
 
-  const found = spring({
-    frame: frame - 80,
+  const headSpring = spring({
+    frame: frame - 12,
     fps,
-    config: { damping: 14, stiffness: 90 },
+    config: { damping: 14, stiffness: 85 },
+  });
+  const headY = interpolate(headSpring, [0, 1], [40, 0]);
+  const headOpacity = interpolate(headSpring, [0, 1], [0, 1]);
+
+  // Vertical line grows top → bottom to connect all three nodes.
+  const lineHeight = interpolate(frame, [40, 100], [0, 580], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
   });
 
   const tagOpacity = interpolate(frame, [125, 141], [0, 1], {
@@ -91,19 +45,52 @@ export const GitWorkflowScene: React.FC = () => {
     extrapolateRight: "clamp",
   });
 
-  const cardBase: React.CSSProperties = {
-    width: 420,
-    backgroundColor: "rgba(8,8,14,0.9)",
-    border: "1px solid rgba(255,255,255,0.06)",
-    padding: "32px 28px",
+  const cardSlide = (i: number) => {
+    const s = spring({
+      frame: frame - STEP_FRAME[i],
+      fps,
+      config: { damping: 16, stiffness: 80 },
+    });
+    const fromRight = i !== 1; // steps 1 & 3 on the right, step 2 on the left
+    const dx = interpolate(s, [0, 1], [fromRight ? 60 : -60, 0]);
+    return { opacity: interpolate(s, [0, 1], [0, 1]), dx, fromRight };
   };
-  const title: React.CSSProperties = { marginTop: 16 };
+
+  const nodeScale = (i: number) => {
+    const s = spring({
+      frame: frame - NODE_FRAME[i],
+      fps,
+      config: { damping: 12, stiffness: 120 },
+    });
+    return interpolate(s, [0, 1], [0, 1]);
+  };
+
+  const cardBase: React.CSSProperties = {
+    position: "absolute",
+    width: 560,
+    backgroundColor: "rgba(12,11,18,0.95)",
+    border: "1px solid rgba(255,255,255,0.06)",
+    borderRadius: "14px",
+    padding: "24px 28px",
+    boxShadow: "0 24px 60px rgba(0,0,0,0.6)",
+  };
   const body: React.CSSProperties = {
     fontFamily: FONT,
     fontSize: 14,
     color: "rgba(255,255,255,0.50)",
     lineHeight: 1.6,
     marginTop: 8,
+  };
+
+  const cardStyle = (i: number): React.CSSProperties => {
+    const { opacity, dx, fromRight } = cardSlide(i);
+    return {
+      ...cardBase,
+      top: NODE_Y[i],
+      [fromRight ? "left" : "right"]: "calc(50% + 50px)",
+      transform: `translateY(-50%) translateX(${dx}px)`,
+      opacity,
+    };
   };
 
   return (
@@ -114,37 +101,86 @@ export const GitWorkflowScene: React.FC = () => {
           alignItems: "center",
           justifyContent: "flex-start",
           flexDirection: "column",
-          paddingTop: 80,
+          paddingTop: 48,
         }}
       >
-        <SceneHeader
-          label="GIT-NATIVE"
-          headline="Fits into your git workflow."
-          subhead="Translations move with your code — pushes, PRs and merges, all taken care of."
-          headlineSize={58}
-        />
+        <div style={{ opacity: badgeOpacity }}>
+          <Badge>GIT-NATIVE WORKFLOW</Badge>
+        </div>
 
         <div
-          style={{ display: "flex", alignItems: "stretch", marginTop: 50 }}
+          style={{
+            fontFamily: FONT,
+            fontSize: 56,
+            fontWeight: 800,
+            letterSpacing: "-2px",
+            color: C.text,
+            textAlign: "center",
+            lineHeight: 1.05,
+            marginTop: 18,
+            maxWidth: 900,
+            opacity: headOpacity,
+            transform: `translateY(${headY}px)`,
+          }}
         >
-          {/* Card 1 */}
+          Your code pushes. We handle the rest.
+        </div>
+
+        {/* Timeline */}
+        <div
+          style={{
+            position: "relative",
+            width: 800,
+            height: 620,
+            marginTop: 36,
+          }}
+        >
+          {/* Vertical line */}
           <div
             style={{
-              ...cardBase,
-              borderRadius: "18px 0 0 18px",
-              borderRight: "none",
-              transform: `translateX(${interpolate(
-                card1,
-                [0, 1],
-                [-90, 0]
-              )}px)`,
-              opacity: interpolate(card1, [0, 1], [0, 1]),
+              position: "absolute",
+              left: "50%",
+              top: 0,
+              transform: "translateX(-50%)",
+              width: 2,
+              height: lineHeight,
+              backgroundColor: "rgba(144,90,246,0.20)",
             }}
-          >
-            <IconBox>⬆</IconBox>
+          />
+
+          {/* Nodes */}
+          {NODE_Y.map((y, i) => (
+            <div
+              key={`node-${i}`}
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: y,
+                width: 48,
+                height: 48,
+                borderRadius: "50%",
+                backgroundColor: "rgba(12,11,18,0.98)",
+                border: "1px solid rgba(144,90,246,0.40)",
+                boxShadow: "0 0 0 6px rgba(3,3,5,0.9)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontFamily: MONO,
+                fontSize: 15,
+                fontWeight: 700,
+                color: C.accent,
+                transform: `translate(-50%, -50%) scale(${nodeScale(i)})`,
+                zIndex: 2,
+              }}
+            >
+              {`0${i + 1}`}
+            </div>
+          ))}
+
+          {/* Card 1 — git push */}
+          <div style={cardStyle(0)}>
             <div
               style={{
-                ...title,
                 fontFamily: MONO,
                 fontSize: 15,
                 fontWeight: 600,
@@ -162,42 +198,19 @@ export const GitWorkflowScene: React.FC = () => {
                 fontSize: 14,
                 fontWeight: 700,
                 color: C.green,
-                marginTop: 16,
-                opacity: interpolate(found, [0, 1], [0, 1]),
-                transform: `translateY(${interpolate(
-                  found,
-                  [0, 1],
-                  [8, 0]
-                )}px)`,
+                marginTop: 14,
               }}
             >
               ✓ 12 new keys found
             </div>
           </div>
 
-          <Connector />
-
-          {/* Card 2 */}
-          <div
-            style={{
-              ...cardBase,
-              borderRadius: 0,
-              borderLeft: "none",
-              borderRight: "none",
-              transform: `translateY(${interpolate(
-                card2,
-                [0, 1],
-                [90, 0]
-              )}px)`,
-              opacity: interpolate(card2, [0, 1], [0, 1]),
-            }}
-          >
-            <IconBox>⚙</IconBox>
+          {/* Card 2 — Diff Engine */}
+          <div style={cardStyle(1)}>
             <div
               style={{
-                ...title,
                 fontFamily: FONT,
-                fontSize: 17,
+                fontSize: 18,
                 fontWeight: 800,
                 color: "#ffffff",
               }}
@@ -219,65 +232,17 @@ export const GitWorkflowScene: React.FC = () => {
                 lineHeight: 1.8,
               }}
             >
-              <div
-                style={{
-                  color: C.green,
-                  opacity: interpolate(frame, [95, 101], [0, 1], {
-                    extrapolateLeft: "clamp",
-                    extrapolateRight: "clamp",
-                  }),
-                }}
-              >
-                + "hero.cta": "Get started"
-              </div>
-              <div
-                style={{
-                  color: C.red,
-                  opacity: interpolate(frame, [99, 105], [0, 1], {
-                    extrapolateLeft: "clamp",
-                    extrapolateRight: "clamp",
-                  }),
-                }}
-              >
-                - "hero.cta": "Start now"
-              </div>
-            </div>
-            <div
-              style={{
-                fontFamily: FONT,
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: "2px",
-                color: C.accent,
-                marginTop: 10,
-              }}
-            >
-              Smart conflict resolution via Diff Engine™
+              <div style={{ color: C.green }}>+ "hero.cta": "Get started"</div>
+              <div style={{ color: C.red }}>- "hero.cta": "Start now"</div>
             </div>
           </div>
 
-          <Connector />
-
-          {/* Card 3 */}
-          <div
-            style={{
-              ...cardBase,
-              borderRadius: "0 18px 18px 0",
-              borderLeft: "none",
-              transform: `translateX(${interpolate(
-                card3,
-                [0, 1],
-                [90, 0]
-              )}px)`,
-              opacity: interpolate(card3, [0, 1], [0, 1]),
-            }}
-          >
-            <IconBox>⎇</IconBox>
+          {/* Card 3 — PR ready */}
+          <div style={cardStyle(2)}>
             <div
               style={{
-                ...title,
                 fontFamily: FONT,
-                fontSize: 14,
+                fontSize: 15,
                 fontWeight: 600,
                 color: "#ffffff",
               }}
@@ -354,7 +319,8 @@ export const GitWorkflowScene: React.FC = () => {
             fontSize: 16,
             color: "rgba(255,255,255,0.40)",
             letterSpacing: "0.2px",
-            marginTop: 44,
+            marginTop: 8,
+            textAlign: "center",
             opacity: tagOpacity,
           }}
         >

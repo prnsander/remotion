@@ -146,15 +146,14 @@ export const CleanFilesScene: React.FC = () => {
       <AbsoluteFill
         style={{
           alignItems: "center",
-          justifyContent: "flex-start",
+          justifyContent: "center",
           flexDirection: "column",
-          paddingTop: 70,
+          paddingTop: 0,
         }}
       >
         <SceneHeader
           label="CLEAN · ORGANIZED · STRUCTURED"
           headline="Locale files that stay clean."
-          subhead="Structured like your codebase — no more wrestling with messy JSON."
           headlineSize={58}
         />
 

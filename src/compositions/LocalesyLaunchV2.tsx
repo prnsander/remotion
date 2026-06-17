@@ -1,12 +1,19 @@
 import React from "react";
 import { AbsoluteFill } from "remotion";
-import { TransitionSeries, springTiming } from "@remotion/transitions";
+import {
+  TransitionSeries,
+  linearTiming,
+  type TransitionPresentation,
+} from "@remotion/transitions";
 import { fade } from "@remotion/transitions/fade";
+import { slide } from "@remotion/transitions/slide";
+import { wipe } from "@remotion/transitions/wipe";
 import { HeroV2Scene } from "../scenes/HeroV2Scene";
 import { PainV2Scene } from "../scenes/PainV2Scene";
 import { PlatformScene } from "../scenes/PlatformScene";
 import { AITranslationScene } from "../scenes/AITranslationScene";
 import { CleanFilesScene } from "../scenes/CleanFilesScene";
+import { StatFlashScene } from "../scenes/StatFlashScene";
 import { GitWorkflowScene } from "../scenes/GitWorkflowScene";
 import { UseCasesBentoScene } from "../scenes/UseCasesBentoScene";
 import { AutopilotScene } from "../scenes/AutopilotScene";
@@ -23,6 +30,7 @@ const SCENES: { component: React.FC; duration: number }[] = [
   { component: PlatformScene, duration: 210 },
   { component: AITranslationScene, duration: 180 },
   { component: CleanFilesScene, duration: 150 },
+  { component: StatFlashScene, duration: 75 },
   { component: GitWorkflowScene, duration: 150 },
   { component: UseCasesBentoScene, duration: 180 },
   { component: AutopilotScene, duration: 150 },
@@ -30,12 +38,22 @@ const SCENES: { component: React.FC; duration: number }[] = [
   { component: FinalCTAScene, duration: 180 },
 ];
 
-const transition = (
-  <TransitionSeries.Transition
-    presentation={fade()}
-    timing={springTiming({ config: { damping: 200 }, durationInFrames: 14 })}
-  />
-);
+// One transition per cut point (between scene i and i+1).
+const TRANSITIONS: {
+  presentation: TransitionPresentation<Record<string, unknown>>;
+  durationInFrames: number;
+}[] = [
+  { presentation: slide({ direction: "from-right" }), durationInFrames: 18 }, // Hero → Pain
+  { presentation: fade(), durationInFrames: 20 }, // Pain → Platform
+  { presentation: slide({ direction: "from-left" }), durationInFrames: 18 }, // Platform → AI
+  { presentation: wipe({ direction: "from-right" }), durationInFrames: 22 }, // AI → CleanFiles
+  { presentation: fade(), durationInFrames: 14 }, // CleanFiles → StatFlash
+  { presentation: slide({ direction: "from-bottom" }), durationInFrames: 18 }, // StatFlash → Git
+  { presentation: fade(), durationInFrames: 16 }, // Git → Bento
+  { presentation: slide({ direction: "from-bottom" }), durationInFrames: 22 }, // Bento → Autopilot
+  { presentation: fade(), durationInFrames: 14 }, // Autopilot → Logo
+  { presentation: fade(), durationInFrames: 14 }, // Logo → FinalCTA
+];
 
 export const LocalesyLaunchV2: React.FC<LocalesyLaunchV2Props> = () => {
   return (
@@ -43,7 +61,14 @@ export const LocalesyLaunchV2: React.FC<LocalesyLaunchV2Props> = () => {
       <TransitionSeries>
         {SCENES.map(({ component: Scene, duration }, i) => (
           <React.Fragment key={i}>
-            {i > 0 && transition}
+            {i > 0 && (
+              <TransitionSeries.Transition
+                presentation={TRANSITIONS[i - 1].presentation}
+                timing={linearTiming({
+                  durationInFrames: TRANSITIONS[i - 1].durationInFrames,
+                })}
+              />
+            )}
             <TransitionSeries.Sequence durationInFrames={duration}>
               <Scene />
             </TransitionSeries.Sequence>

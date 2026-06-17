@@ -12,7 +12,6 @@ import {
 import { C, FONT, MONO } from "./shared/theme";
 import { PurpleWash } from "./shared/PurpleWash";
 import { Vignette } from "./shared/Vignette";
-import { Badge } from "./shared/Badge";
 import { CopyIcon } from "./shared/CopyIcon";
 import { GrainOverlay } from "../components/GrainOverlay";
 
@@ -195,12 +194,34 @@ export const HeroV2Scene: React.FC = () => {
         {/* Badge */}
         <div
           style={{
+            marginBottom: 28,
+            textAlign: "center",
             opacity: badgeOpacity,
             transform: `translateY(${badgeY}px)`,
-            marginBottom: 28,
           }}
         >
-          <Badge>Early Access · 1,160+ Teams</Badge>
+          <div
+            style={{
+              fontFamily: FONT,
+              fontSize: 22,
+              fontWeight: 700,
+              color: C.accent,
+              letterSpacing: "-0.5px",
+            }}
+          >
+            1,160+
+          </div>
+          <div
+            style={{
+              fontFamily: FONT,
+              fontSize: 13,
+              color: "rgba(255,255,255,0.35)",
+              letterSpacing: "2px",
+              marginTop: 4,
+            }}
+          >
+            DEVELOPERS ALREADY ON EARLY ACCESS
+          </div>
         </div>
 
         {/* Headline */}
@@ -290,7 +311,6 @@ export const HeroV2Scene: React.FC = () => {
             transform: `translateY(${subY}px)`,
           }}
         >
-          Translation management for fast-moving teams.
         </div>
 
         {/* Command + CTA row */}
@@ -373,15 +393,8 @@ export const HeroV2Scene: React.FC = () => {
             opacity: proofOpacity,
           }}
         >
-          Join
-          <span style={{ fontWeight: 700, color: "rgba(255,255,255,0.70)" }}>
-            {" "}
-            1,160+ others{" "}
-          </span>
-          on the early access list
         </div>
       </AbsoluteFill>
-
       <Vignette />
       <GrainOverlay opacity={0.032} />
     </AbsoluteFill>

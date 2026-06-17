@@ -11,7 +11,6 @@ import {
 import { C, FONT, MONO } from "./shared/theme";
 import { PurpleWash } from "./shared/PurpleWash";
 import { Vignette } from "./shared/Vignette";
-import { SceneHeader } from "./shared/SceneHeader";
 import { GrainOverlay } from "../components/GrainOverlay";
 
 const NAV = ["Dashboard", "Projects", "Translations", "Settings", "Team"];
@@ -44,31 +43,85 @@ export const PlatformScene: React.FC = () => {
     extrapolateRight: "clamp",
   });
 
+  // Top-left intro copy.
+  const badgeOpacity = interpolate(frame, [0, 14], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const headSpring = spring({
+    frame: frame - 12,
+    fps,
+    config: { damping: 14, stiffness: 85 },
+  });
+  const headX = interpolate(headSpring, [0, 1], [-40, 0]);
+  const headOpacity = interpolate(headSpring, [0, 1], [0, 1]);
+  const subOpacity = interpolate(frame, [24, 40], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
   return (
     <AbsoluteFill style={{ backgroundColor: C.bg }}>
       <PurpleWash />
+
       <AbsoluteFill
         style={{
-          alignItems: "center",
-          justifyContent: "flex-start",
           flexDirection: "column",
-          paddingTop: 70,
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "0 96px",
+          boxSizing: "border-box",
         }}
       >
-        <SceneHeader
-          label="MEET LOCALESY"
-          headline="The smart localization platform."
-          subhead="Designed to help you manage translations effortlessly for all kinds of applications. Just plug and play."
-          headlineSize={62}
-        />
+        {/* TEXT BLOCK — now in normal flow */}
+        <div style={{ textAlign: "center", marginBottom: 20 }}>
+          <div
+            style={{
+              fontFamily: FONT,
+              fontSize: 13,
+              fontWeight: 700,
+              color: C.accent,
+              letterSpacing: "4px",
+              opacity: badgeOpacity,
+              marginBottom: 16,
+            }}
+          >
+            MEET LOCALESY
+          </div>
+          <div
+            style={{
+              fontFamily: FONT,
+              fontSize: 48,
+              fontWeight: 800,
+              letterSpacing: "-2px",
+              color: "#ffffff",
+              lineHeight: 1.05,
+              opacity: headOpacity,
+              transform: `translateX(${headX}px)`,
+              marginBottom: 12,
+            }}
+          >
+            The smart localization platform.
+          </div>
+          <div
+            style={{
+              fontFamily: FONT,
+              fontSize: 17,
+              color: "rgba(255,255,255,0.55)",
+              lineHeight: 1.5,
+              maxWidth: 520,
+              opacity: subOpacity,
+            }}
+          >
+          </div>
+        </div>
 
-        {/* Browser mockup */}
+        {/* Browser mockup — now in normal flow below the text */}
         <div
           style={{
-            width: 1540,
+            width: 1440,
             borderRadius: "14px",
             overflow: "hidden",
-            marginTop: 40,
             transform: `translateY(${mockY}px)`,
             opacity: interpolate(frame, [38, 56], [0, 1], {
               extrapolateLeft: "clamp",
@@ -131,7 +184,7 @@ export const PlatformScene: React.FC = () => {
 
           {/* Dashboard interior */}
           <div
-            style={{ height: 560, backgroundColor: "#07060c", display: "flex" }}
+            style={{ height: 540, backgroundColor: "#07060c", display: "flex" }}
           >
             {/* Sidebar */}
             <div

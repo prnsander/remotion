@@ -130,7 +130,6 @@ export const AITranslateScene: React.FC = () => {
             <div
               style={{ fontSize: 16, color: THEME.muted, marginBottom: 20 }}
             >
-              Source · English 🇺🇸
             </div>
             {KEYS.map((k, i) => {
               const opacity = interpolate(
@@ -276,7 +275,6 @@ export const AITranslateScene: React.FC = () => {
             opacity: footerOpacity,
           }}
         >
-          Batch translate with AI in seconds · Context-aware · On-brand tone
         </div>
       </AbsoluteFill>
     </SceneShell>

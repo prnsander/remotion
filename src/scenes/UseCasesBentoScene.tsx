@@ -9,7 +9,7 @@ import {
 import { C, FONT, MONO } from "./shared/theme";
 import { PurpleWash } from "./shared/PurpleWash";
 import { Vignette } from "./shared/Vignette";
-import { SceneHeader } from "./shared/SceneHeader";
+import { Badge } from "./shared/Badge";
 import { GrainOverlay } from "../components/GrainOverlay";
 
 const CardBottom: React.FC<{
@@ -62,7 +62,7 @@ const cardShell: React.CSSProperties = {
   border: "1px solid rgba(255,255,255,0.07)",
   boxShadow: "0 24px 60px rgba(0,0,0,0.75)",
   position: "relative",
-  height: 360,
+  height: 460,
 };
 
 const FLAGS = ["🇩🇪", "🇫🇷", "🇯🇵", "🇪🇸", "🇰🇷"];
@@ -77,6 +77,11 @@ const FLAG_POS = [
 export const UseCasesBentoScene: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+
+  const badgeOpacity = interpolate(frame, [0, 14], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
 
   const cardAnim = (i: number) => {
     const s = spring({
@@ -93,30 +98,37 @@ export const UseCasesBentoScene: React.FC = () => {
   return (
     <AbsoluteFill style={{ backgroundColor: C.bg }}>
       <PurpleWash />
+
+      {/* Floating label */}
+      <div
+        style={{
+          position: "absolute",
+          top: 48,
+          left: "50%",
+          transform: "translateX(-50%)",
+          opacity: badgeOpacity,
+          zIndex: 4,
+        }}
+      >
+        <Badge>USE CASES</Badge>
+      </div>
+
       <AbsoluteFill
         style={{
           alignItems: "center",
-          justifyContent: "flex-start",
+          justifyContent: "center",
           flexDirection: "column",
-          paddingTop: 64,
+          paddingTop: 60,
+          paddingBottom: 60,
         }}
       >
-        <SceneHeader
-          label="USE CASES"
-          headline="Translations, off your plate."
-          subhead="Built for founders and developers who'd rather ship features than let translations become the bottleneck."
-          headlineSize={62}
-          maxWidth={700}
-        />
-
         <div
           style={{
             width: 1280,
             display: "grid",
             gridTemplateColumns: "2fr 1fr",
-            gridTemplateRows: "1fr 1fr",
+            gridTemplateRows: "460px 460px",
             gap: "18px",
-            marginTop: 40,
           }}
         >
           {/* Card TL */}
@@ -186,11 +198,27 @@ export const UseCasesBentoScene: React.FC = () => {
                   "linear-gradient(to bottom, transparent 40%, rgba(8,8,14,0.98) 72%)",
               }}
             />
-            <CardBottom
-              tag="Speed"
-              title="Ship fast, localize faster"
-              desc="Localesy keeps pace with your releases."
-            />
+            <div
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                padding: "28px 32px",
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: FONT,
+                  fontSize: 26,
+                  fontWeight: 800,
+                  color: "#ffffff",
+                  letterSpacing: "-0.5px",
+                  lineHeight: 1.15,
+                }}
+              >
+                Translations, off your plate.
+              </div>
+            </div>
           </div>
 
           {/* Card TR */}

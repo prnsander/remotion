@@ -15,19 +15,16 @@ const BLOCKS = [
   {
     num: "01",
     headline: "Translations management gives you a headache.",
-    body: "Copy-pasting. Reviewing. Filling all empty translations. An unwanted chore you always have to push through.",
     start: 18,
   },
   {
     num: "02",
     headline: "Generated translations feel and sound robotic.",
-    body: "So you pick professional services — which are costly, require extra effort, and push your deadlines even further.",
     start: 68,
   },
   {
     num: "03",
     headline: "Your team finds even the top tools hard to use.",
-    body: "Extra work, annoyance, slower dev pace — so they leave out the language part to meet deadlines.",
     start: 118,
   },
 ];
@@ -163,7 +160,7 @@ export const PainV2Scene: React.FC = () => {
                 fontSize: 12,
                 fontWeight: 700,
                 letterSpacing: "5px",
-                color: "rgba(255,255,255,0.22)",
+                color: "rgba(255, 252, 252, 0.22)",
                 opacity: labelOpacity,
                 marginBottom: 18,
               }}

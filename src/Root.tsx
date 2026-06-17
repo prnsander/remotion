@@ -57,7 +57,7 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id="LocalesyLaunchV2"
         component={LocalesyLaunchV2}
-        durationInFrames={1650}
+        durationInFrames={1725}
         fps={30}
         width={1920}
         height={1080}

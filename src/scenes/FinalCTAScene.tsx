@@ -109,7 +109,6 @@ export const FinalCTAScene: React.FC = () => {
             opacity: kickerOpacity,
           }}
         >
-          TRANSLATION MANAGEMENT, ON AUTOPILOT.
         </div>
 
         <div
@@ -257,7 +256,6 @@ export const FinalCTAScene: React.FC = () => {
             opacity: footerOpacity,
           }}
         >
-          Free to start · No credit card required · Cancel anytime
         </div>
       </AbsoluteFill>
 
