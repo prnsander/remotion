@@ -9,7 +9,6 @@ import {
 import { C, FONT, MONO } from "./shared/theme";
 import { PurpleWash } from "./shared/PurpleWash";
 import { Vignette } from "./shared/Vignette";
-import { Badge } from "./shared/Badge";
 import { GrainOverlay } from "../components/GrainOverlay";
 
 const CardBottom: React.FC<{
@@ -59,7 +58,7 @@ const cardShell: React.CSSProperties = {
   borderRadius: "20px",
   overflow: "hidden",
   backgroundColor: "rgba(8,8,14,0.96)",
-  border: "1px solid rgba(255,255,255,0.07)",
+  border: "1px solid rgba(255,255,255,0.14)",
   boxShadow: "0 24px 60px rgba(0,0,0,0.75)",
   position: "relative",
   height: 460,
@@ -108,9 +107,14 @@ export const UseCasesBentoScene: React.FC = () => {
           transform: "translateX(-50%)",
           opacity: badgeOpacity,
           zIndex: 4,
+          fontFamily: FONT,
+          fontSize: 13,
+          fontWeight: 700,
+          color: C.accent,
+          letterSpacing: "4px",
         }}
       >
-        <Badge>USE CASES</Badge>
+        USE CASES
       </div>
 
       <AbsoluteFill
@@ -118,7 +122,7 @@ export const UseCasesBentoScene: React.FC = () => {
           alignItems: "center",
           justifyContent: "center",
           flexDirection: "column",
-          paddingTop: 60,
+          paddingTop: 90,
           paddingBottom: 60,
         }}
       >

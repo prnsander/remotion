@@ -1,38 +1,11 @@
 import React from "react";
-import { useCurrentFrame, useVideoConfig } from "remotion";
-import { noise3D } from "@remotion/noise";
 import { AbsoluteFill } from "remotion";
 
-// Performance note: renders at 1/8 resolution grid. For full 1920x1080 grain,
-// replace with a static grain PNG in public/ using <Img> at low opacity.
-export const GrainOverlay: React.FC<{ opacity?: number }> = ({
-  opacity = 0.04,
-}) => {
-  const frame = useCurrentFrame();
-  const { width, height } = useVideoConfig();
-  const cellSize = 8;
-
-  return (
-    <AbsoluteFill style={{ opacity, mixBlendMode: "overlay" }}>
-      {Array.from({ length: Math.ceil(height / cellSize) }).map((_, y) =>
-        Array.from({ length: Math.ceil(width / cellSize) }).map((_, x) => {
-          const n = noise3D("grain", x / 50, y / 50, frame / 10);
-          const brightness = Math.floor(((n + 1) / 2) * 255);
-          return (
-            <div
-              key={`${x}-${y}`}
-              style={{
-                position: "absolute",
-                left: x * cellSize,
-                top: y * cellSize,
-                width: cellSize,
-                height: cellSize,
-                backgroundColor: `rgb(${brightness},${brightness},${brightness})`,
-              }}
-            />
-          );
-        })
-      )}
-    </AbsoluteFill>
-  );
-};
+export const GrainOverlay: React.FC<{ opacity?: number }> = ({ opacity = 0.04 }) => (
+  <AbsoluteFill style={{
+    opacity,
+    mixBlendMode: "overlay",
+    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+    backgroundSize: "200px 200px",
+  }} />
+);

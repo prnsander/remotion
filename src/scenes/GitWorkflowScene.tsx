@@ -9,7 +9,6 @@ import {
 import { C, FONT, MONO } from "./shared/theme";
 import { PurpleWash } from "./shared/PurpleWash";
 import { Vignette } from "./shared/Vignette";
-import { Badge } from "./shared/Badge";
 import { GrainOverlay } from "../components/GrainOverlay";
 
 // Y position of each node relative to the timeline container top.
@@ -21,10 +20,6 @@ export const GitWorkflowScene: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const badgeOpacity = interpolate(frame, [0, 14], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
 
   const headSpring = spring({
     frame: frame - 12,
@@ -101,12 +96,9 @@ export const GitWorkflowScene: React.FC = () => {
           alignItems: "center",
           justifyContent: "flex-start",
           flexDirection: "column",
-          paddingTop: 48,
+          paddingTop: 96,
         }}
       >
-        <div style={{ opacity: badgeOpacity }}>
-          <Badge>GIT-NATIVE WORKFLOW</Badge>
-        </div>
 
         <div
           style={{
@@ -324,8 +316,6 @@ export const GitWorkflowScene: React.FC = () => {
             opacity: tagOpacity,
           }}
         >
-          Auto-sync on push or on demand · Smart conflict resolution ·
-          Merge-ready pull requests
         </div>
       </AbsoluteFill>
 

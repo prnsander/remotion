@@ -116,9 +116,9 @@ const CodeBlock: React.FC<{ lines: Seg[][]; base: number; stagger: number }> = (
 };
 
 const PILLS = [
-  "↕ Sort & group keys",
-  "📦 Export JSON / YAML",
-  "✏️ Rename without breaking",
+  "Sort & group keys",
+  "Export JSON / YAML",
+  "Rename without breaking",
 ];
 
 export const CleanFilesScene: React.FC = () => {
@@ -152,7 +152,7 @@ export const CleanFilesScene: React.FC = () => {
         }}
       >
         <SceneHeader
-          label="CLEAN · ORGANIZED · STRUCTURED"
+          label=""
           headline="Locale files that stay clean."
           headlineSize={58}
         />
@@ -229,7 +229,7 @@ export const CleanFilesScene: React.FC = () => {
           }}
         >
           {PILLS.map((p, i) => {
-            const start = 112 + i * 14;
+            const start = 60 + i * 14;
             const opacity = interpolate(frame, [start, start + 12], [0, 1], {
               extrapolateLeft: "clamp",
               extrapolateRight: "clamp",

@@ -75,13 +75,30 @@ export const AutopilotScene: React.FC = () => {
         }}
       />
 
+      {/* Scrolling dot grid on the right half */}
+      <div
+        style={{
+          position: "absolute",
+          right: 0,
+          top: 0,
+          width: "46%",
+          height: "100%",
+          backgroundImage:
+            "radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px)",
+          backgroundSize: "32px 32px",
+          backgroundPosition: `0 ${frame * 0.4}px`,
+          opacity: 0.35,
+          pointerEvents: "none",
+        }}
+      />
+
       {/* Right floating components */}
       <AbsoluteFill style={{ pointerEvents: "none" }}>
         <div
           style={{
             position: "absolute",
             right: -60,
-            bottom: 0,
+            bottom: 300,
             width: 800,
             height: 480,
             opacity: 0.65,

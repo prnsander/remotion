@@ -55,7 +55,26 @@ const PainBlock: React.FC<(typeof BLOCKS)[number]> = ({
   );
 
   return (
-    <div style={{ maxWidth: 860, textAlign: "center", margin: "26px 0" }}>
+    <div
+      style={{
+        position: "relative",
+        maxWidth: 860,
+        textAlign: "center",
+        margin: "26px 0",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          left: -24,
+          top: "20%",
+          bottom: "20%",
+          width: "3px",
+          borderRadius: "2px",
+          backgroundColor: C.accent,
+          opacity: numOpacity,
+        }}
+      />
       <div
         style={{
           fontFamily: FONT,
