@@ -96,47 +96,6 @@ This section contains the contents of the repository's files.
 </svg>
 </file>
 
-<file path="src/components/GrainOverlay.tsx">
-import React from "react";
-import { useCurrentFrame, useVideoConfig } from "remotion";
-import { noise3D } from "@remotion/noise";
-import { AbsoluteFill } from "remotion";
-
-// Performance note: renders at 1/8 resolution grid. For full 1920x1080 grain,
-// replace with a static grain PNG in public/ using <Img> at low opacity.
-export const GrainOverlay: React.FC<{ opacity?: number }> = ({
-  opacity = 0.04,
-}) => {
-  const frame = useCurrentFrame();
-  const { width, height } = useVideoConfig();
-  const cellSize = 8;
-
-  return (
-    <AbsoluteFill style={{ opacity, mixBlendMode: "overlay" }}>
-      {Array.from({ length: Math.ceil(height / cellSize) }).map((_, y) =>
-        Array.from({ length: Math.ceil(width / cellSize) }).map((_, x) => {
-          const n = noise3D("grain", x / 50, y / 50, frame / 10);
-          const brightness = Math.floor(((n + 1) / 2) * 255);
-          return (
-            <div
-              key={`${x}-${y}`}
-              style={{
-                position: "absolute",
-                left: x * cellSize,
-                top: y * cellSize,
-                width: cellSize,
-                height: cellSize,
-                backgroundColor: `rgb(${brightness},${brightness},${brightness})`,
-              }}
-            />
-          );
-        })
-      )}
-    </AbsoluteFill>
-  );
-};
-</file>
-
 <file path="src/scenes/shared/Badge.tsx">
 import React from "react";
 import { FONT } from "./theme";
@@ -367,305 +326,6 @@ export const Vignette: React.FC = () => {
 };
 </file>
 
-<file path="src/scenes/AutopilotScene.tsx">
-import React from "react";
-import {
-  AbsoluteFill,
-  interpolate,
-  spring,
-  useCurrentFrame,
-  useVideoConfig,
-} from "remotion";
-import { C, FONT } from "./shared/theme";
-import { GrainOverlay } from "../components/GrainOverlay";
-
-export const AutopilotScene: React.FC = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  const line1 = spring({
-    frame: frame - 10,
-    fps,
-    config: { damping: 14, stiffness: 85 },
-  });
-  const line2 = spring({
-    frame: frame - 20,
-    fps,
-    config: { damping: 14, stiffness: 85 },
-  });
-  const sub1Opacity = interpolate(frame, [38, 56], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const sub2Opacity = interpolate(frame, [52, 70], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const btn = spring({
-    frame: frame - 72,
-    fps,
-    config: { damping: 13, stiffness: 120 },
-  });
-  const arrowX = interpolate(frame % 60, [0, 30, 60], [0, 5, 0]);
-
-  const illoSpring = spring({
-    frame: frame - 28,
-    fps,
-    config: { damping: 16, stiffness: 70 },
-  });
-  const illoX = interpolate(illoSpring, [0, 1], [100, 0]);
-
-  const fadeOut = interpolate(frame, [124, 150], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  const mockBlock: React.CSSProperties = {
-    backgroundColor: "rgba(0,0,0,0.20)",
-    border: "1px solid rgba(255,255,255,0.15)",
-    marginBottom: 12,
-  };
-
-  return (
-    <AbsoluteFill style={{ backgroundColor: "#905af6" }}>
-      {/* radial texture */}
-      <AbsoluteFill
-        style={{
-          pointerEvents: "none",
-          background:
-            "radial-gradient(ellipse 80% 60% at 50% 50%, rgba(196,162,255,0.08) 0%, transparent 65%)",
-        }}
-      />
-      {/* inner glow border */}
-      <AbsoluteFill
-        style={{
-          pointerEvents: "none",
-          boxShadow:
-            "inset 0 0 0 2px rgba(196,162,255,0.85), inset 0 0 120px rgba(144,90,246,0.20)",
-        }}
-      />
-
-      {/* Scrolling dot grid on the right half */}
-      <div
-        style={{
-          position: "absolute",
-          right: 0,
-          top: 0,
-          width: "46%",
-          height: "100%",
-          backgroundImage:
-            "radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px)",
-          backgroundSize: "32px 32px",
-          backgroundPosition: `0 ${frame * 0.4}px`,
-          opacity: 0.35,
-          pointerEvents: "none",
-        }}
-      />
-
-      {/* Right floating components */}
-      <AbsoluteFill style={{ pointerEvents: "none" }}>
-        <div
-          style={{
-            position: "absolute",
-            right: -60,
-            bottom: 300,
-            width: 800,
-            height: 480,
-            opacity: 0.65,
-            transform: `translateX(${illoX}px)`,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            paddingLeft: 80,
-          }}
-        >
-          <div
-            style={{ ...mockBlock, height: 40, width: 360, borderRadius: 8 }}
-          />
-          <div
-            style={{
-              display: "flex",
-              gap: 8,
-              marginBottom: 12,
-            }}
-          >
-            {[70, 90, 60].map((w, i) => (
-              <div
-                key={i}
-                style={{
-                  height: 22,
-                  width: w,
-                  borderRadius: 100,
-                  backgroundColor: "rgba(255,255,255,0.06)",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                }}
-              />
-            ))}
-          </div>
-          <div
-            style={{
-              ...mockBlock,
-              height: 44,
-              width: 360,
-              borderRadius: 8,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "0 14px",
-            }}
-          >
-            <div
-              style={{
-                width: 120,
-                height: 12,
-                borderRadius: 6,
-                backgroundColor: "rgba(255,255,255,0.12)",
-              }}
-            />
-            <div
-              style={{
-                width: 80,
-                height: 12,
-                borderRadius: 6,
-                backgroundColor: "rgba(0,0,0,0.20)",
-              }}
-            />
-          </div>
-          <div
-            style={{
-              width: 44,
-              height: 26,
-              borderRadius: 13,
-              backgroundColor: "rgba(0,0,0,0.25)",
-              border: "1px solid rgba(255,255,255,0.15)",
-              marginBottom: 12,
-              display: "flex",
-              alignItems: "center",
-              padding: 3,
-              justifyContent: "flex-end",
-            }}
-          >
-            <div
-              style={{
-                width: 20,
-                height: 20,
-                borderRadius: "50%",
-                backgroundColor: "rgba(255,255,255,0.5)",
-              }}
-            />
-          </div>
-          <div
-            style={{
-              width: 180,
-              height: 38,
-              borderRadius: 8,
-              backgroundColor: "rgba(0,0,0,0.30)",
-            }}
-          />
-        </div>
-      </AbsoluteFill>
-
-      {/* Left content */}
-      <div
-        style={{
-          position: "absolute",
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: "54%",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          padding: "0 80px",
-        }}
-      >
-        <div
-          style={{
-            fontFamily: FONT,
-            fontSize: 52,
-            fontWeight: 700,
-            color: "rgba(255,255,255,0.95)",
-            letterSpacing: "-2px",
-            lineHeight: 1.1,
-            opacity: interpolate(line1, [0, 1], [0, 1]),
-            transform: `translateY(${interpolate(line1, [0, 1], [40, 0])}px)`,
-          }}
-        >
-          Translation management,
-        </div>
-        <div
-          style={{
-            fontFamily: FONT,
-            fontSize: 52,
-            fontWeight: 700,
-            color: "rgba(255,255,255,0.80)",
-            letterSpacing: "-2px",
-            lineHeight: 1.1,
-            opacity: interpolate(line2, [0, 1], [0, 1]),
-            transform: `translateY(${interpolate(line2, [0, 1], [40, 0])}px)`,
-          }}
-        >
-          on autopilot.
-        </div>
-        <div
-          style={{
-            fontFamily: FONT,
-            fontSize: 22,
-            fontWeight: 500,
-            color: "rgba(255,255,255,0.78)",
-            letterSpacing: "-0.3px",
-            marginTop: 24,
-            opacity: sub1Opacity,
-          }}
-        >
-          Stop losing engineering hours to translation busywork.
-        </div>
-        <div
-          style={{
-            fontFamily: FONT,
-            fontSize: 18,
-            color: "rgba(255,255,255,0.58)",
-            marginTop: 10,
-            opacity: sub2Opacity,
-          }}
-        >
-          Set up in less than 2 minutes. No credit card required.
-        </div>
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-            backgroundColor: "rgba(0,0,0,0.72)",
-            borderRadius: "14px",
-            padding: "13px 26px",
-            color: "rgba(255,255,255,0.95)",
-            fontFamily: FONT,
-            fontSize: 17,
-            fontWeight: 700,
-            boxShadow: "0 4px 16px rgba(0,0,0,0.30)",
-            marginTop: 36,
-            alignSelf: "flex-start",
-            transform: `scale(${interpolate(btn, [0, 1], [0.9, 1])})`,
-            opacity: interpolate(btn, [0, 1], [0, 1]),
-          }}
-        >
-          Get started for free
-          <span style={{ fontSize: 18, transform: `translateX(${arrowX}px)` }}>
-            →
-          </span>
-        </div>
-      </div>
-
-      <GrainOverlay opacity={0.025} />
-      <AbsoluteFill
-        style={{ backgroundColor: C.bg, opacity: fadeOut, pointerEvents: "none" }}
-      />
-    </AbsoluteFill>
-  );
-};
-</file>
-
 <file path="src/scenes/LogoRevealScene.tsx">
 import React from "react";
 import {
@@ -775,87 +435,18 @@ export const LogoRevealScene: React.FC = () => {
 };
 </file>
 
-<file path="src/compositions/LocalesyLaunchV2.tsx">
+<file path="src/components/GrainOverlay.tsx">
 import React from "react";
 import { AbsoluteFill } from "remotion";
-import {
-  TransitionSeries,
-  linearTiming,
-  type TransitionPresentation,
-} from "@remotion/transitions";
-import { fade } from "@remotion/transitions/fade";
-import { slide } from "@remotion/transitions/slide";
-import { wipe } from "@remotion/transitions/wipe";
-import { HeroV2Scene } from "../scenes/HeroV2Scene";
-import { PainV2Scene } from "../scenes/PainV2Scene";
-import { PlatformScene } from "../scenes/PlatformScene";
-import { AITranslationScene } from "../scenes/AITranslationScene";
-import { CleanFilesScene } from "../scenes/CleanFilesScene";
-import { StatFlashScene } from "../scenes/StatFlashScene";
-import { GitWorkflowScene } from "../scenes/GitWorkflowScene";
-import { UseCasesBentoScene } from "../scenes/UseCasesBentoScene";
-import { AutopilotScene } from "../scenes/AutopilotScene";
-import { LogoRevealScene } from "../scenes/LogoRevealScene";
-import { FinalCTAScene } from "../scenes/FinalCTAScene";
 
-export interface LocalesyLaunchV2Props {
-  [key: string]: unknown;
-}
-
-const SCENES: { component: React.FC; duration: number }[] = [
-  { component: HeroV2Scene, duration: 150 },
-  { component: PainV2Scene, duration: 180 },
-  { component: PlatformScene, duration: 210 },
-  { component: AITranslationScene, duration: 180 },
-  { component: CleanFilesScene, duration: 150 },
-  { component: StatFlashScene, duration: 75 },
-  { component: GitWorkflowScene, duration: 150 },
-  { component: UseCasesBentoScene, duration: 180 },
-  { component: AutopilotScene, duration: 150 },
-  { component: LogoRevealScene, duration: 120 },
-  { component: FinalCTAScene, duration: 180 },
-];
-
-// One transition per cut point (between scene i and i+1).
-const TRANSITIONS: {
-  presentation: TransitionPresentation<Record<string, unknown>>;
-  durationInFrames: number;
-}[] = [
-  { presentation: slide({ direction: "from-right" }), durationInFrames: 18 }, // Hero → Pain
-  { presentation: fade(), durationInFrames: 20 }, // Pain → Platform
-  { presentation: slide({ direction: "from-left" }), durationInFrames: 18 }, // Platform → AI
-  { presentation: wipe({ direction: "from-right" }), durationInFrames: 22 }, // AI → CleanFiles
-  { presentation: fade(), durationInFrames: 14 }, // CleanFiles → StatFlash
-  { presentation: slide({ direction: "from-bottom" }), durationInFrames: 18 }, // StatFlash → Git
-  { presentation: fade(), durationInFrames: 16 }, // Git → Bento
-  { presentation: slide({ direction: "from-bottom" }), durationInFrames: 22 }, // Bento → Autopilot
-  { presentation: fade(), durationInFrames: 14 }, // Autopilot → Logo
-  { presentation: fade(), durationInFrames: 14 }, // Logo → FinalCTA
-];
-
-export const LocalesyLaunchV2: React.FC<LocalesyLaunchV2Props> = () => {
-  return (
-    <AbsoluteFill style={{ backgroundColor: "#030305" }}>
-      <TransitionSeries>
-        {SCENES.map(({ component: Scene, duration }, i) => (
-          <React.Fragment key={i}>
-            {i > 0 && (
-              <TransitionSeries.Transition
-                presentation={TRANSITIONS[i - 1].presentation}
-                timing={linearTiming({
-                  durationInFrames: TRANSITIONS[i - 1].durationInFrames,
-                })}
-              />
-            )}
-            <TransitionSeries.Sequence durationInFrames={duration}>
-              <Scene />
-            </TransitionSeries.Sequence>
-          </React.Fragment>
-        ))}
-      </TransitionSeries>
-    </AbsoluteFill>
-  );
-};
+export const GrainOverlay: React.FC<{ opacity?: number }> = ({ opacity = 0.04 }) => (
+  <AbsoluteFill style={{
+    opacity,
+    mixBlendMode: "overlay",
+    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+    backgroundSize: "200px 200px",
+  }} />
+);
 </file>
 
 <file path="src/scenes/AITranslationScene.tsx">
@@ -1205,7 +796,7 @@ export const AITranslationScene: React.FC = () => {
 };
 </file>
 
-<file path="src/scenes/CleanFilesScene.tsx">
+<file path="src/scenes/AutopilotScene.tsx">
 import React from "react";
 import {
   AbsoluteFill,
@@ -1214,258 +805,291 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
-import { C, FONT, MONO } from "./shared/theme";
-import { PurpleWash } from "./shared/PurpleWash";
-import { Vignette } from "./shared/Vignette";
-import { SceneHeader } from "./shared/SceneHeader";
+import { C, FONT } from "./shared/theme";
 import { GrainOverlay } from "../components/GrainOverlay";
 
-type Seg = { t: string; c: string };
-
-const BRACE_L = "rgba(255,255,255,0.30)";
-const KEY_L = "rgba(255,255,255,0.55)";
-const VAL_L = "rgba(255,255,255,0.70)";
-const COMMENT = "rgba(255,255,255,0.28)";
-
-const BEFORE: Seg[][] = [
-  [{ t: "{", c: BRACE_L }],
-  [
-    { t: '  "hero.title": ', c: KEY_L },
-    { t: '""', c: C.red },
-  ],
-  [
-    { t: '  "hero.desc":  ', c: KEY_L },
-    { t: '""', c: C.red },
-  ],
-  [
-    { t: '  "nav.home":   ', c: KEY_L },
-    { t: '"Home"', c: VAL_L },
-  ],
-  [
-    { t: '  "cta":        ', c: KEY_L },
-    { t: '""', c: C.red },
-  ],
-  [
-    { t: '  "error.msg":  ', c: KEY_L },
-    { t: '""', c: C.red },
-  ],
-  [
-    { t: '  "nav.about":  ', c: KEY_L },
-    { t: '"About Us"', c: VAL_L },
-  ],
-  [
-    { t: '  "hero.cta":   ', c: KEY_L },
-    { t: '""', c: C.red },
-  ],
-  [{ t: "}", c: BRACE_L }],
-];
-
-const AFTER: Seg[][] = [
-  [{ t: "{", c: COMMENT }],
-  [{ t: "  // Hero section", c: COMMENT }],
-  [
-    { t: '  "hero.cta":   ', c: C.accent },
-    { t: '"Get started for free"', c: C.green },
-  ],
-  [
-    { t: '  "hero.desc":  ', c: C.accent },
-    { t: '"Localize in minutes."', c: C.green },
-  ],
-  [
-    { t: '  "hero.title": ', c: C.accent },
-    { t: '"Localize anything"', c: C.green },
-  ],
-  [{ t: " ", c: COMMENT }],
-  [{ t: "  // Navigation", c: COMMENT }],
-  [
-    { t: '  "nav.about":  ', c: C.accent },
-    { t: '"About Us"', c: C.green },
-  ],
-  [
-    { t: '  "nav.home":   ', c: C.accent },
-    { t: '"Home"', c: C.green },
-  ],
-  [{ t: "}", c: COMMENT }],
-];
-
-const CodeBlock: React.FC<{ lines: Seg[][]; base: number; stagger: number }> = ({
-  lines,
-  base,
-  stagger,
-}) => {
-  const frame = useCurrentFrame();
-  return (
-    <div
-      style={{
-        padding: "20px 24px",
-        fontFamily: MONO,
-        fontSize: 14,
-        lineHeight: 1.9,
-      }}
-    >
-      {lines.map((segs, i) => {
-        const start = base + i * stagger;
-        const opacity = interpolate(frame, [start, start + 8], [0, 1], {
-          extrapolateLeft: "clamp",
-          extrapolateRight: "clamp",
-        });
-        return (
-          <div key={i} style={{ whiteSpace: "pre", opacity, minHeight: 26 }}>
-            {segs.map((s, j) => (
-              <span key={j} style={{ color: s.c }}>
-                {s.t}
-              </span>
-            ))}
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-
-const PILLS = [
-  "↕ Sort & group keys",
-  "📦 Export JSON / YAML",
-  "✏️ Rename without breaking",
-];
-
-export const CleanFilesScene: React.FC = () => {
+export const AutopilotScene: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const panel = (start: number) => {
-    const s = spring({
-      frame: frame - start,
-      fps,
-      config: { damping: 13, stiffness: 78 },
-    });
-    return {
-      transform: `translateY(${interpolate(s, [0, 1], [80, 0])}px)`,
-      opacity: interpolate(frame, [start, start + 16], [0, 1], {
-        extrapolateLeft: "clamp",
-        extrapolateRight: "clamp",
-      }),
-    };
+  const line1 = spring({
+    frame: frame - 10,
+    fps,
+    config: { damping: 14, stiffness: 85 },
+  });
+  const line2 = spring({
+    frame: frame - 20,
+    fps,
+    config: { damping: 14, stiffness: 85 },
+  });
+  const sub1Opacity = interpolate(frame, [38, 56], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const sub2Opacity = interpolate(frame, [52, 70], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const btn = spring({
+    frame: frame - 72,
+    fps,
+    config: { damping: 13, stiffness: 120 },
+  });
+  const arrowX = interpolate(frame % 60, [0, 30, 60], [0, 5, 0]);
+
+  const illoSpring = spring({
+    frame: frame - 28,
+    fps,
+    config: { damping: 16, stiffness: 70 },
+  });
+  const illoX = interpolate(illoSpring, [0, 1], [100, 0]);
+
+  const fadeOut = interpolate(frame, [124, 150], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  const mockBlock: React.CSSProperties = {
+    backgroundColor: "rgba(0,0,0,0.20)",
+    border: "1px solid rgba(255,255,255,0.15)",
+    marginBottom: 12,
   };
 
   return (
-    <AbsoluteFill style={{ backgroundColor: C.bg }}>
-      <PurpleWash />
+    <AbsoluteFill style={{ backgroundColor: "#905af6" }}>
+      {/* radial texture */}
       <AbsoluteFill
         style={{
-          alignItems: "center",
-          justifyContent: "center",
-          flexDirection: "column",
-          paddingTop: 0,
+          pointerEvents: "none",
+          background:
+            "radial-gradient(ellipse 80% 60% at 50% 50%, rgba(196,162,255,0.08) 0%, transparent 65%)",
         }}
-      >
-        <SceneHeader
-          label="CLEAN · ORGANIZED · STRUCTURED"
-          headline="Locale files that stay clean."
-          headlineSize={58}
-        />
+      />
+      {/* inner glow border */}
+      <AbsoluteFill
+        style={{
+          pointerEvents: "none",
+          boxShadow:
+            "inset 0 0 0 2px rgba(196,162,255,0.85), inset 0 0 120px rgba(144,90,246,0.20)",
+        }}
+      />
 
-        <div style={{ display: "flex", gap: 28, marginTop: 44 }}>
-          {/* BEFORE */}
-          <div
-            style={{
-              width: 640,
-              borderRadius: "16px",
-              overflow: "hidden",
-              backgroundColor: "rgba(14,6,6,0.95)",
-              border: "1px solid rgba(239,68,68,0.14)",
-              ...panel(38),
-            }}
-          >
-            <div
-              style={{
-                height: 44,
-                backgroundColor: "rgba(239,68,68,0.07)",
-                borderBottom: "1px solid rgba(239,68,68,0.12)",
-                padding: "0 20px",
-                display: "flex",
-                alignItems: "center",
-                fontFamily: FONT,
-                fontSize: 13,
-                fontWeight: 600,
-                color: "#ef4444",
-              }}
-            >
-              ❌&nbsp;&nbsp;Before Localesy
-            </div>
-            <CodeBlock lines={BEFORE} base={44} stagger={4} />
-          </div>
+      {/* Scrolling dot grid on the right half */}
+      <div
+        style={{
+          position: "absolute",
+          right: 0,
+          top: 0,
+          width: "46%",
+          height: "100%",
+          backgroundImage:
+            "radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px)",
+          backgroundSize: "32px 32px",
+          backgroundPosition: `0 ${frame * 0.4}px`,
+          opacity: 0.35,
+          pointerEvents: "none",
+        }}
+      />
 
-          {/* AFTER */}
-          <div
-            style={{
-              width: 640,
-              borderRadius: "16px",
-              overflow: "hidden",
-              backgroundColor: "rgba(6,14,8,0.95)",
-              border: "1px solid rgba(34,197,94,0.14)",
-              ...panel(58),
-            }}
-          >
-            <div
-              style={{
-                height: 44,
-                backgroundColor: "rgba(34,197,94,0.07)",
-                borderBottom: "1px solid rgba(34,197,94,0.12)",
-                padding: "0 20px",
-                display: "flex",
-                alignItems: "center",
-                fontFamily: FONT,
-                fontSize: 13,
-                fontWeight: 600,
-                color: "#22c55e",
-              }}
-            >
-              ✓&nbsp;&nbsp;With Localesy
-            </div>
-            <CodeBlock lines={AFTER} base={68} stagger={4} />
-          </div>
-        </div>
-
-        {/* Feature pills */}
+      {/* Right floating components */}
+      <AbsoluteFill style={{ pointerEvents: "none" }}>
         <div
           style={{
+            position: "absolute",
+            right: -60,
+            bottom: 300,
+            width: 800,
+            height: 480,
+            opacity: 0.65,
+            transform: `translateX(${illoX}px)`,
             display: "flex",
-            gap: 12,
+            flexDirection: "column",
             justifyContent: "center",
-            marginTop: 24,
+            paddingLeft: 80,
           }}
         >
-          {PILLS.map((p, i) => {
-            const start = 60 + i * 14;
-            const opacity = interpolate(frame, [start, start + 12], [0, 1], {
-              extrapolateLeft: "clamp",
-              extrapolateRight: "clamp",
-            });
-            return (
+          <div
+            style={{ ...mockBlock, height: 40, width: 360, borderRadius: 8 }}
+          />
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              marginBottom: 12,
+            }}
+          >
+            {[70, 90, 60].map((w, i) => (
               <div
-                key={p}
+                key={i}
                 style={{
-                  backgroundColor: "rgba(144,90,246,0.08)",
-                  border: "1px solid rgba(144,90,246,0.22)",
-                  borderRadius: "100px",
-                  padding: "7px 18px",
-                  fontFamily: FONT,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: "#905af6",
-                  opacity,
+                  height: 22,
+                  width: w,
+                  borderRadius: 100,
+                  backgroundColor: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.15)",
                 }}
-              >
-                {p}
-              </div>
-            );
-          })}
+              />
+            ))}
+          </div>
+          <div
+            style={{
+              ...mockBlock,
+              height: 44,
+              width: 360,
+              borderRadius: 8,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "0 14px",
+            }}
+          >
+            <div
+              style={{
+                width: 120,
+                height: 12,
+                borderRadius: 6,
+                backgroundColor: "rgba(255,255,255,0.12)",
+              }}
+            />
+            <div
+              style={{
+                width: 80,
+                height: 12,
+                borderRadius: 6,
+                backgroundColor: "rgba(0,0,0,0.20)",
+              }}
+            />
+          </div>
+          <div
+            style={{
+              width: 44,
+              height: 26,
+              borderRadius: 13,
+              backgroundColor: "rgba(0,0,0,0.25)",
+              border: "1px solid rgba(255,255,255,0.15)",
+              marginBottom: 12,
+              display: "flex",
+              alignItems: "center",
+              padding: 3,
+              justifyContent: "flex-end",
+            }}
+          >
+            <div
+              style={{
+                width: 20,
+                height: 20,
+                borderRadius: "50%",
+                backgroundColor: "rgba(255,255,255,0.5)",
+              }}
+            />
+          </div>
+          <div
+            style={{
+              width: 180,
+              height: 38,
+              borderRadius: 8,
+              backgroundColor: "rgba(0,0,0,0.30)",
+            }}
+          />
         </div>
       </AbsoluteFill>
 
-      <Vignette />
-      <GrainOverlay opacity={0.032} />
+      {/* Left content */}
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: "54%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          padding: "0 80px",
+        }}
+      >
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 52,
+            fontWeight: 700,
+            color: "rgba(255,255,255,0.95)",
+            letterSpacing: "-2px",
+            lineHeight: 1.1,
+            opacity: interpolate(line1, [0, 1], [0, 1]),
+            transform: `translateY(${interpolate(line1, [0, 1], [40, 0])}px)`,
+          }}
+        >
+          Translation management,
+        </div>
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 52,
+            fontWeight: 700,
+            color: "rgba(255,255,255,0.80)",
+            letterSpacing: "-2px",
+            lineHeight: 1.1,
+            opacity: interpolate(line2, [0, 1], [0, 1]),
+            transform: `translateY(${interpolate(line2, [0, 1], [40, 0])}px)`,
+          }}
+        >
+          on autopilot.
+        </div>
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 22,
+            fontWeight: 500,
+            color: "rgba(255,255,255,0.78)",
+            letterSpacing: "-0.3px",
+            marginTop: 24,
+            opacity: sub1Opacity,
+          }}
+        >
+          Stop losing engineering hours to translation busywork.
+        </div>
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 18,
+            color: "rgba(255,255,255,0.58)",
+            marginTop: 10,
+            opacity: sub2Opacity,
+          }}
+        >
+          Set up in less than 2 minutes. No credit card required.
+        </div>
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            backgroundColor: "rgba(0,0,0,0.72)",
+            borderRadius: "14px",
+            padding: "13px 26px",
+            color: "rgba(255,255,255,0.95)",
+            fontFamily: FONT,
+            fontSize: 17,
+            fontWeight: 700,
+            boxShadow: "0 4px 16px rgba(0,0,0,0.30)",
+            marginTop: 36,
+            alignSelf: "flex-start",
+            transform: `scale(${interpolate(btn, [0, 1], [0.9, 1])})`,
+            opacity: interpolate(btn, [0, 1], [0, 1]),
+          }}
+        >
+          Get started for free
+          <span style={{ fontSize: 18, transform: `translateX(${arrowX}px)` }}>
+            →
+          </span>
+        </div>
+      </div>
+
+      <GrainOverlay opacity={0.025} />
+      <AbsoluteFill
+        style={{ backgroundColor: C.bg, opacity: fadeOut, pointerEvents: "none" }}
+      />
     </AbsoluteFill>
   );
 };
@@ -1742,343 +1366,6 @@ export const FinalCTAScene: React.FC = () => {
           pointerEvents: "none",
         }}
       />
-    </AbsoluteFill>
-  );
-};
-</file>
-
-<file path="src/scenes/GitWorkflowScene.tsx">
-import React from "react";
-import {
-  AbsoluteFill,
-  interpolate,
-  spring,
-  useCurrentFrame,
-  useVideoConfig,
-} from "remotion";
-import { C, FONT, MONO } from "./shared/theme";
-import { PurpleWash } from "./shared/PurpleWash";
-import { Vignette } from "./shared/Vignette";
-import { Badge } from "./shared/Badge";
-import { GrainOverlay } from "../components/GrainOverlay";
-
-// Y position of each node relative to the timeline container top.
-const NODE_Y = [200, 370, 540];
-const STEP_FRAME = [50, 75, 100];
-const NODE_FRAME = [45, 70, 95];
-
-export const GitWorkflowScene: React.FC = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  const badgeOpacity = interpolate(frame, [0, 14], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  const headSpring = spring({
-    frame: frame - 12,
-    fps,
-    config: { damping: 14, stiffness: 85 },
-  });
-  const headY = interpolate(headSpring, [0, 1], [40, 0]);
-  const headOpacity = interpolate(headSpring, [0, 1], [0, 1]);
-
-  // Vertical line grows top → bottom to connect all three nodes.
-  const lineHeight = interpolate(frame, [40, 100], [0, 580], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  const tagOpacity = interpolate(frame, [125, 141], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  const cardSlide = (i: number) => {
-    const s = spring({
-      frame: frame - STEP_FRAME[i],
-      fps,
-      config: { damping: 16, stiffness: 80 },
-    });
-    const fromRight = i !== 1; // steps 1 & 3 on the right, step 2 on the left
-    const dx = interpolate(s, [0, 1], [fromRight ? 60 : -60, 0]);
-    return { opacity: interpolate(s, [0, 1], [0, 1]), dx, fromRight };
-  };
-
-  const nodeScale = (i: number) => {
-    const s = spring({
-      frame: frame - NODE_FRAME[i],
-      fps,
-      config: { damping: 12, stiffness: 120 },
-    });
-    return interpolate(s, [0, 1], [0, 1]);
-  };
-
-  const cardBase: React.CSSProperties = {
-    position: "absolute",
-    width: 560,
-    backgroundColor: "rgba(12,11,18,0.95)",
-    border: "1px solid rgba(255,255,255,0.06)",
-    borderRadius: "14px",
-    padding: "24px 28px",
-    boxShadow: "0 24px 60px rgba(0,0,0,0.6)",
-  };
-  const body: React.CSSProperties = {
-    fontFamily: FONT,
-    fontSize: 14,
-    color: "rgba(255,255,255,0.50)",
-    lineHeight: 1.6,
-    marginTop: 8,
-  };
-
-  const cardStyle = (i: number): React.CSSProperties => {
-    const { opacity, dx, fromRight } = cardSlide(i);
-    return {
-      ...cardBase,
-      top: NODE_Y[i],
-      [fromRight ? "left" : "right"]: "calc(50% + 50px)",
-      transform: `translateY(-50%) translateX(${dx}px)`,
-      opacity,
-    };
-  };
-
-  return (
-    <AbsoluteFill style={{ backgroundColor: C.bg }}>
-      <PurpleWash />
-      <AbsoluteFill
-        style={{
-          alignItems: "center",
-          justifyContent: "flex-start",
-          flexDirection: "column",
-          paddingTop: 48,
-        }}
-      >
-        <div style={{ opacity: badgeOpacity }}>
-          <Badge>GIT-NATIVE WORKFLOW</Badge>
-        </div>
-
-        <div
-          style={{
-            fontFamily: FONT,
-            fontSize: 56,
-            fontWeight: 800,
-            letterSpacing: "-2px",
-            color: C.text,
-            textAlign: "center",
-            lineHeight: 1.05,
-            marginTop: 18,
-            maxWidth: 900,
-            opacity: headOpacity,
-            transform: `translateY(${headY}px)`,
-          }}
-        >
-          Your code pushes. We handle the rest.
-        </div>
-
-        {/* Timeline */}
-        <div
-          style={{
-            position: "relative",
-            width: 800,
-            height: 620,
-            marginTop: 36,
-          }}
-        >
-          {/* Vertical line */}
-          <div
-            style={{
-              position: "absolute",
-              left: "50%",
-              top: 0,
-              transform: "translateX(-50%)",
-              width: 2,
-              height: lineHeight,
-              backgroundColor: "rgba(144,90,246,0.20)",
-            }}
-          />
-
-          {/* Nodes */}
-          {NODE_Y.map((y, i) => (
-            <div
-              key={`node-${i}`}
-              style={{
-                position: "absolute",
-                left: "50%",
-                top: y,
-                width: 48,
-                height: 48,
-                borderRadius: "50%",
-                backgroundColor: "rgba(12,11,18,0.98)",
-                border: "1px solid rgba(144,90,246,0.40)",
-                boxShadow: "0 0 0 6px rgba(3,3,5,0.9)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontFamily: MONO,
-                fontSize: 15,
-                fontWeight: 700,
-                color: C.accent,
-                transform: `translate(-50%, -50%) scale(${nodeScale(i)})`,
-                zIndex: 2,
-              }}
-            >
-              {`0${i + 1}`}
-            </div>
-          ))}
-
-          {/* Card 1 — git push */}
-          <div style={cardStyle(0)}>
-            <div
-              style={{
-                fontFamily: MONO,
-                fontSize: 15,
-                fontWeight: 600,
-                color: C.accent,
-              }}
-            >
-              git push origin main
-            </div>
-            <div style={body}>
-              Localesy detects your changes automatically on every push.
-            </div>
-            <div
-              style={{
-                fontFamily: FONT,
-                fontSize: 14,
-                fontWeight: 700,
-                color: C.green,
-                marginTop: 14,
-              }}
-            >
-              ✓ 12 new keys found
-            </div>
-          </div>
-
-          {/* Card 2 — Diff Engine */}
-          <div style={cardStyle(1)}>
-            <div
-              style={{
-                fontFamily: FONT,
-                fontSize: 18,
-                fontWeight: 800,
-                color: "#ffffff",
-              }}
-            >
-              Diff Engine™
-            </div>
-            <div style={body}>
-              Smart conflict resolution — every key tracked, every change
-              versioned.
-            </div>
-            <div
-              style={{
-                marginTop: 14,
-                backgroundColor: "rgba(0,0,0,0.35)",
-                borderRadius: "8px",
-                padding: "10px 14px",
-                fontFamily: MONO,
-                fontSize: 12,
-                lineHeight: 1.8,
-              }}
-            >
-              <div style={{ color: C.green }}>+ "hero.cta": "Get started"</div>
-              <div style={{ color: C.red }}>- "hero.cta": "Start now"</div>
-            </div>
-          </div>
-
-          {/* Card 3 — PR ready */}
-          <div style={cardStyle(2)}>
-            <div
-              style={{
-                fontFamily: FONT,
-                fontSize: 15,
-                fontWeight: 600,
-                color: "#ffffff",
-              }}
-            >
-              #47 feat: update translations
-            </div>
-            <div
-              style={{
-                display: "flex",
-                gap: 6,
-                marginTop: 10,
-                flexWrap: "wrap",
-              }}
-            >
-              <span
-                style={{
-                  fontFamily: FONT,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  letterSpacing: "1.5px",
-                  borderRadius: "6px",
-                  padding: "4px 10px",
-                  color: C.accent,
-                  backgroundColor: "rgba(144,90,246,0.12)",
-                }}
-              >
-                translations
-              </span>
-              <span
-                style={{
-                  fontFamily: FONT,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  letterSpacing: "1.5px",
-                  borderRadius: "6px",
-                  padding: "4px 10px",
-                  backgroundColor: "rgba(255,255,255,0.06)",
-                  color: "rgba(255,255,255,0.50)",
-                }}
-              >
-                auto-generated
-              </span>
-              <span
-                style={{
-                  fontFamily: FONT,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  letterSpacing: "1.5px",
-                  borderRadius: "6px",
-                  padding: "4px 10px",
-                  color: C.green,
-                  backgroundColor: "rgba(34,197,94,0.08)",
-                }}
-              >
-                ✓ merge-ready
-              </span>
-            </div>
-            <div
-              style={{
-                fontFamily: FONT,
-                fontSize: 12,
-                color: "rgba(255,255,255,0.35)",
-                marginTop: 12,
-              }}
-            >
-              2 files changed · +47 −3
-            </div>
-          </div>
-        </div>
-
-        <div
-          style={{
-            fontFamily: FONT,
-            fontSize: 16,
-            color: "rgba(255,255,255,0.40)",
-            letterSpacing: "0.2px",
-            marginTop: 8,
-            textAlign: "center",
-            opacity: tagOpacity,
-          }}
-        >
-        </div>
-      </AbsoluteFill>
-
-      <Vignette />
-      <GrainOverlay opacity={0.032} />
     </AbsoluteFill>
   );
 };
@@ -2482,249 +1769,6 @@ export const HeroV2Scene: React.FC = () => {
         >
         </div>
       </AbsoluteFill>
-      <Vignette />
-      <GrainOverlay opacity={0.032} />
-    </AbsoluteFill>
-  );
-};
-</file>
-
-<file path="src/scenes/PainV2Scene.tsx">
-import React from "react";
-import {
-  AbsoluteFill,
-  interpolate,
-  spring,
-  useCurrentFrame,
-  useVideoConfig,
-} from "remotion";
-import { C, FONT } from "./shared/theme";
-import { PurpleWash } from "./shared/PurpleWash";
-import { Vignette } from "./shared/Vignette";
-import { GrainOverlay } from "../components/GrainOverlay";
-
-const BLOCKS = [
-  {
-    num: "01",
-    headline: "Translations management gives you a headache.",
-    start: 18,
-  },
-  {
-    num: "02",
-    headline: "Generated translations feel and sound robotic.",
-    start: 68,
-  },
-  {
-    num: "03",
-    headline: "Your team finds even the top tools hard to use.",
-    start: 118,
-  },
-];
-
-const PainBlock: React.FC<(typeof BLOCKS)[number]> = ({
-  num,
-  headline,
-  body,
-  start,
-}) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  const numOpacity = interpolate(frame, [start, start + 10], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const headSpring = spring({
-    frame: frame - (start + 6),
-    fps,
-    config: { damping: 13, stiffness: 80 },
-  });
-  const bodyOpacity = interpolate(
-    frame,
-    [start + 14, start + 30],
-    [0, 1],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
-  );
-
-  return (
-    <div
-      style={{
-        position: "relative",
-        maxWidth: 860,
-        textAlign: "center",
-        margin: "26px 0",
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          left: -24,
-          top: "20%",
-          bottom: "20%",
-          width: "3px",
-          borderRadius: "2px",
-          backgroundColor: C.accent,
-          opacity: numOpacity,
-        }}
-      />
-      <div
-        style={{
-          fontFamily: FONT,
-          fontSize: 12,
-          fontWeight: 700,
-          letterSpacing: "4px",
-          color: C.accent,
-          opacity: numOpacity,
-          marginBottom: 14,
-        }}
-      >
-        {num}
-      </div>
-      <div
-        style={{
-          fontFamily: FONT,
-          fontSize: 44,
-          fontWeight: 800,
-          color: C.text,
-          letterSpacing: "-1.5px",
-          opacity: interpolate(headSpring, [0, 1], [0, 1]),
-          transform: `translateY(${interpolate(
-            headSpring,
-            [0, 1],
-            [36, 0]
-          )}px)`,
-        }}
-      >
-        {headline}
-      </div>
-      <div
-        style={{
-          fontFamily: FONT,
-          fontSize: 19,
-          fontWeight: 400,
-          color: "rgba(255,255,255,0.52)",
-          lineHeight: 1.65,
-          marginTop: 16,
-          opacity: bodyOpacity,
-        }}
-      >
-        {body}
-      </div>
-    </div>
-  );
-};
-
-export const PainV2Scene: React.FC = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  const labelOpacity = interpolate(frame, [0, 14], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  // Group fade-out at frame 152
-  const groupOpacity = interpolate(frame, [152, 164], [1, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const groupY = interpolate(frame, [152, 164], [0, -28], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  // Closing lines
-  const line1Spring = spring({
-    frame: frame - 164,
-    fps,
-    config: { damping: 14, stiffness: 90 },
-  });
-  const line2Spring = spring({
-    frame: frame - 172,
-    fps,
-    config: { damping: 12, stiffness: 100 },
-  });
-
-  return (
-    <AbsoluteFill style={{ backgroundColor: C.bg }}>
-      <PurpleWash />
-      <AbsoluteFill
-        style={{
-          alignItems: "center",
-          justifyContent: "center",
-          flexDirection: "column",
-        }}
-      >
-        {frame < 164 && (
-          <div
-            style={{
-              opacity: groupOpacity,
-              transform: `translateY(${groupY}px)`,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <div
-              style={{
-                fontFamily: FONT,
-                fontSize: 12,
-                fontWeight: 700,
-                letterSpacing: "5px",
-                color: "rgba(255, 252, 252, 0.22)",
-                opacity: labelOpacity,
-                marginBottom: 18,
-              }}
-            >
-              KNOW THAT FEELING?
-            </div>
-            {BLOCKS.map((b) => (
-              <PainBlock key={b.num} {...b} />
-            ))}
-          </div>
-        )}
-
-        {frame >= 160 && (
-          <div style={{ textAlign: "center" }}>
-            <div
-              style={{
-                fontFamily: FONT,
-                fontSize: 34,
-                fontWeight: 400,
-                color: "rgba(255,255,255,0.48)",
-                letterSpacing: "-0.5px",
-                opacity: interpolate(line1Spring, [0, 1], [0, 1]),
-                transform: `translateY(${interpolate(
-                  line1Spring,
-                  [0, 1],
-                  [32, 0]
-                )}px)`,
-              }}
-            >
-              We felt it many times.
-            </div>
-            <div
-              style={{
-                fontFamily: FONT,
-                fontSize: 78,
-                fontWeight: 800,
-                color: C.accent,
-                letterSpacing: "-3.5px",
-                marginTop: 12,
-                opacity: interpolate(line2Spring, [0, 1], [0, 1]),
-                transform: `translateY(${interpolate(
-                  line2Spring,
-                  [0, 1],
-                  [40, 0]
-                )}px) scale(${interpolate(line2Spring, [0, 1], [0.92, 1])})`,
-              }}
-            >
-              We said no more.
-            </div>
-          </div>
-        )}
-      </AbsoluteFill>
-
       <Vignette />
       <GrainOverlay opacity={0.032} />
     </AbsoluteFill>
@@ -3164,6 +2208,954 @@ export const PlatformScene: React.FC = () => {
 };
 </file>
 
+<file path="src/compositions/LocalesyLaunchV2.tsx">
+import React from "react";
+import { AbsoluteFill } from "remotion";
+import {
+  TransitionSeries,
+  linearTiming,
+  springTiming,
+  type TransitionPresentation,
+  type TransitionTiming,
+} from "@remotion/transitions";
+import { fade } from "@remotion/transitions/fade";
+import { slide } from "@remotion/transitions/slide";
+import { HeroV2Scene } from "../scenes/HeroV2Scene";
+import { PainV2Scene } from "../scenes/PainV2Scene";
+import { PlatformScene } from "../scenes/PlatformScene";
+import { AITranslationScene } from "../scenes/AITranslationScene";
+import { CleanFilesScene } from "../scenes/CleanFilesScene";
+import { StatFlashScene } from "../scenes/StatFlashScene";
+import { GitWorkflowScene } from "../scenes/GitWorkflowScene";
+import { UseCasesBentoScene } from "../scenes/UseCasesBentoScene";
+import { AutopilotScene } from "../scenes/AutopilotScene";
+import { LogoRevealScene } from "../scenes/LogoRevealScene";
+import { FinalCTAScene } from "../scenes/FinalCTAScene";
+
+export interface LocalesyLaunchV2Props {
+  [key: string]: unknown;
+}
+
+const SCENES: { component: React.FC; duration: number }[] = [
+  { component: HeroV2Scene, duration: 150 },
+  { component: PainV2Scene, duration: 240 },
+  { component: PlatformScene, duration: 210 },
+  { component: AITranslationScene, duration: 180 },
+  { component: CleanFilesScene, duration: 150 },
+  { component: StatFlashScene, duration: 75 },
+  { component: GitWorkflowScene, duration: 150 },
+  { component: UseCasesBentoScene, duration: 180 },
+  { component: AutopilotScene, duration: 150 },
+  { component: LogoRevealScene, duration: 120 },
+  { component: FinalCTAScene, duration: 180 },
+];
+
+// One transition per cut point (between scene i and i+1).
+const TRANSITIONS: {
+  presentation: TransitionPresentation<Record<string, unknown>>;
+  durationInFrames: number;
+  timing?: TransitionTiming;
+}[] = [
+  {
+    presentation: slide({ direction: "from-right" }),
+    durationInFrames: 22,
+    timing: springTiming({
+      config: { damping: 40, stiffness: 90 },
+      durationInFrames: 22,
+    }),
+  }, // Hero → Pain
+  { presentation: fade(), durationInFrames: 20 }, // Pain → Platform
+  { presentation: fade(), durationInFrames: 14 }, // Platform → AI
+  { presentation: fade(), durationInFrames: 20 }, // AI → CleanFiles
+  { presentation: fade(), durationInFrames: 14 }, // CleanFiles → StatFlash
+  { presentation: slide({ direction: "from-bottom" }), durationInFrames: 18 }, // StatFlash → Git
+  { presentation: fade(), durationInFrames: 16 }, // Git → Bento
+  {
+    presentation: slide({ direction: "from-bottom" }),
+    durationInFrames: 22,
+    timing: springTiming({
+      config: { damping: 40, stiffness: 90 },
+      durationInFrames: 22,
+    }),
+  }, // Bento → Autopilot
+  { presentation: fade(), durationInFrames: 14 }, // Autopilot → Logo
+  { presentation: fade(), durationInFrames: 14 }, // Logo → FinalCTA
+];
+
+export const LocalesyLaunchV2: React.FC<LocalesyLaunchV2Props> = () => {
+  return (
+    <AbsoluteFill style={{ backgroundColor: "#030305" }}>
+      <TransitionSeries>
+        {SCENES.map(({ component: Scene, duration }, i) => (
+          <React.Fragment key={i}>
+            {i > 0 && (
+              <TransitionSeries.Transition
+                presentation={TRANSITIONS[i - 1].presentation}
+                timing={
+                  TRANSITIONS[i - 1].timing ??
+                  linearTiming({
+                    durationInFrames: TRANSITIONS[i - 1].durationInFrames,
+                  })
+                }
+              />
+            )}
+            <TransitionSeries.Sequence durationInFrames={duration}>
+              <Scene />
+            </TransitionSeries.Sequence>
+          </React.Fragment>
+        ))}
+      </TransitionSeries>
+    </AbsoluteFill>
+  );
+};
+</file>
+
+<file path="src/scenes/CleanFilesScene.tsx">
+import React from "react";
+import {
+  AbsoluteFill,
+  interpolate,
+  spring,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
+import { C, FONT, MONO } from "./shared/theme";
+import { PurpleWash } from "./shared/PurpleWash";
+import { Vignette } from "./shared/Vignette";
+import { SceneHeader } from "./shared/SceneHeader";
+import { GrainOverlay } from "../components/GrainOverlay";
+
+type Seg = { t: string; c: string };
+
+const BRACE_L = "rgba(255,255,255,0.30)";
+const KEY_L = "rgba(255,255,255,0.55)";
+const VAL_L = "rgba(255,255,255,0.70)";
+const COMMENT = "rgba(255,255,255,0.28)";
+
+const BEFORE: Seg[][] = [
+  [{ t: "{", c: BRACE_L }],
+  [
+    { t: '  "hero.title": ', c: KEY_L },
+    { t: '""', c: C.red },
+  ],
+  [
+    { t: '  "hero.desc":  ', c: KEY_L },
+    { t: '""', c: C.red },
+  ],
+  [
+    { t: '  "nav.home":   ', c: KEY_L },
+    { t: '"Home"', c: VAL_L },
+  ],
+  [
+    { t: '  "cta":        ', c: KEY_L },
+    { t: '""', c: C.red },
+  ],
+  [
+    { t: '  "error.msg":  ', c: KEY_L },
+    { t: '""', c: C.red },
+  ],
+  [
+    { t: '  "nav.about":  ', c: KEY_L },
+    { t: '"About Us"', c: VAL_L },
+  ],
+  [
+    { t: '  "hero.cta":   ', c: KEY_L },
+    { t: '""', c: C.red },
+  ],
+  [{ t: "}", c: BRACE_L }],
+];
+
+const AFTER: Seg[][] = [
+  [{ t: "{", c: COMMENT }],
+  [{ t: "  // Hero section", c: COMMENT }],
+  [
+    { t: '  "hero.cta":   ', c: C.accent },
+    { t: '"Get started for free"', c: C.green },
+  ],
+  [
+    { t: '  "hero.desc":  ', c: C.accent },
+    { t: '"Localize in minutes."', c: C.green },
+  ],
+  [
+    { t: '  "hero.title": ', c: C.accent },
+    { t: '"Localize anything"', c: C.green },
+  ],
+  [{ t: " ", c: COMMENT }],
+  [{ t: "  // Navigation", c: COMMENT }],
+  [
+    { t: '  "nav.about":  ', c: C.accent },
+    { t: '"About Us"', c: C.green },
+  ],
+  [
+    { t: '  "nav.home":   ', c: C.accent },
+    { t: '"Home"', c: C.green },
+  ],
+  [{ t: "}", c: COMMENT }],
+];
+
+const CodeBlock: React.FC<{ lines: Seg[][]; base: number; stagger: number }> = ({
+  lines,
+  base,
+  stagger,
+}) => {
+  const frame = useCurrentFrame();
+  return (
+    <div
+      style={{
+        padding: "20px 24px",
+        fontFamily: MONO,
+        fontSize: 14,
+        lineHeight: 1.9,
+      }}
+    >
+      {lines.map((segs, i) => {
+        const start = base + i * stagger;
+        const opacity = interpolate(frame, [start, start + 8], [0, 1], {
+          extrapolateLeft: "clamp",
+          extrapolateRight: "clamp",
+        });
+        return (
+          <div key={i} style={{ whiteSpace: "pre", opacity, minHeight: 26 }}>
+            {segs.map((s, j) => (
+              <span key={j} style={{ color: s.c }}>
+                {s.t}
+              </span>
+            ))}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+const PILLS = [
+  "Sort & group keys",
+  "Export JSON / YAML",
+  "Rename without breaking",
+];
+
+export const CleanFilesScene: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  const panel = (start: number) => {
+    const s = spring({
+      frame: frame - start,
+      fps,
+      config: { damping: 13, stiffness: 78 },
+    });
+    return {
+      transform: `translateY(${interpolate(s, [0, 1], [80, 0])}px)`,
+      opacity: interpolate(frame, [start, start + 16], [0, 1], {
+        extrapolateLeft: "clamp",
+        extrapolateRight: "clamp",
+      }),
+    };
+  };
+
+  return (
+    <AbsoluteFill style={{ backgroundColor: C.bg }}>
+      <PurpleWash />
+      <AbsoluteFill
+        style={{
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          paddingTop: 0,
+        }}
+      >
+        <SceneHeader
+          label=""
+          headline="Locale files that stay clean."
+          headlineSize={58}
+        />
+
+        <div style={{ display: "flex", gap: 28, marginTop: 44 }}>
+          {/* BEFORE */}
+          <div
+            style={{
+              width: 640,
+              borderRadius: "16px",
+              overflow: "hidden",
+              backgroundColor: "rgba(14,6,6,0.95)",
+              border: "1px solid rgba(239,68,68,0.14)",
+              ...panel(38),
+            }}
+          >
+            <div
+              style={{
+                height: 44,
+                backgroundColor: "rgba(239,68,68,0.07)",
+                borderBottom: "1px solid rgba(239,68,68,0.12)",
+                padding: "0 20px",
+                display: "flex",
+                alignItems: "center",
+                fontFamily: FONT,
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#ef4444",
+              }}
+            >
+              ❌&nbsp;&nbsp;Before Localesy
+            </div>
+            <CodeBlock lines={BEFORE} base={44} stagger={4} />
+          </div>
+
+          {/* AFTER */}
+          <div
+            style={{
+              width: 640,
+              borderRadius: "16px",
+              overflow: "hidden",
+              backgroundColor: "rgba(6,14,8,0.95)",
+              border: "1px solid rgba(34,197,94,0.14)",
+              ...panel(58),
+            }}
+          >
+            <div
+              style={{
+                height: 44,
+                backgroundColor: "rgba(34,197,94,0.07)",
+                borderBottom: "1px solid rgba(34,197,94,0.12)",
+                padding: "0 20px",
+                display: "flex",
+                alignItems: "center",
+                fontFamily: FONT,
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#22c55e",
+              }}
+            >
+              ✓&nbsp;&nbsp;With Localesy
+            </div>
+            <CodeBlock lines={AFTER} base={68} stagger={4} />
+          </div>
+        </div>
+
+        {/* Feature pills */}
+        <div
+          style={{
+            display: "flex",
+            gap: 12,
+            justifyContent: "center",
+            marginTop: 24,
+          }}
+        >
+          {PILLS.map((p, i) => {
+            const start = 60 + i * 14;
+            const opacity = interpolate(frame, [start, start + 12], [0, 1], {
+              extrapolateLeft: "clamp",
+              extrapolateRight: "clamp",
+            });
+            return (
+              <div
+                key={p}
+                style={{
+                  backgroundColor: "rgba(144,90,246,0.08)",
+                  border: "1px solid rgba(144,90,246,0.22)",
+                  borderRadius: "100px",
+                  padding: "7px 18px",
+                  fontFamily: FONT,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#905af6",
+                  opacity,
+                }}
+              >
+                {p}
+              </div>
+            );
+          })}
+        </div>
+      </AbsoluteFill>
+
+      <Vignette />
+      <GrainOverlay opacity={0.032} />
+    </AbsoluteFill>
+  );
+};
+</file>
+
+<file path="src/scenes/GitWorkflowScene.tsx">
+import React from "react";
+import {
+  AbsoluteFill,
+  interpolate,
+  spring,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
+import { C, FONT, MONO } from "./shared/theme";
+import { PurpleWash } from "./shared/PurpleWash";
+import { Vignette } from "./shared/Vignette";
+import { GrainOverlay } from "../components/GrainOverlay";
+
+// Y position of each node relative to the timeline container top.
+const NODE_Y = [200, 370, 540];
+const STEP_FRAME = [50, 75, 100];
+const NODE_FRAME = [45, 70, 95];
+
+export const GitWorkflowScene: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+
+  const headSpring = spring({
+    frame: frame - 12,
+    fps,
+    config: { damping: 14, stiffness: 85 },
+  });
+  const headY = interpolate(headSpring, [0, 1], [40, 0]);
+  const headOpacity = interpolate(headSpring, [0, 1], [0, 1]);
+
+  // Vertical line grows top → bottom to connect all three nodes.
+  const lineHeight = interpolate(frame, [40, 100], [0, 580], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  const tagOpacity = interpolate(frame, [125, 141], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  const cardSlide = (i: number) => {
+    const s = spring({
+      frame: frame - STEP_FRAME[i],
+      fps,
+      config: { damping: 16, stiffness: 80 },
+    });
+    const fromRight = i !== 1; // steps 1 & 3 on the right, step 2 on the left
+    const dx = interpolate(s, [0, 1], [fromRight ? 60 : -60, 0]);
+    return { opacity: interpolate(s, [0, 1], [0, 1]), dx, fromRight };
+  };
+
+  const nodeScale = (i: number) => {
+    const s = spring({
+      frame: frame - NODE_FRAME[i],
+      fps,
+      config: { damping: 12, stiffness: 120 },
+    });
+    return interpolate(s, [0, 1], [0, 1]);
+  };
+
+  const cardBase: React.CSSProperties = {
+    position: "absolute",
+    width: 560,
+    backgroundColor: "rgba(12,11,18,0.95)",
+    border: "1px solid rgba(255,255,255,0.06)",
+    borderRadius: "14px",
+    padding: "24px 28px",
+    boxShadow: "0 24px 60px rgba(0,0,0,0.6)",
+  };
+  const body: React.CSSProperties = {
+    fontFamily: FONT,
+    fontSize: 14,
+    color: "rgba(255,255,255,0.50)",
+    lineHeight: 1.6,
+    marginTop: 8,
+  };
+
+  const cardStyle = (i: number): React.CSSProperties => {
+    const { opacity, dx, fromRight } = cardSlide(i);
+    return {
+      ...cardBase,
+      top: NODE_Y[i],
+      [fromRight ? "left" : "right"]: "calc(50% + 50px)",
+      transform: `translateY(-50%) translateX(${dx}px)`,
+      opacity,
+    };
+  };
+
+  return (
+    <AbsoluteFill style={{ backgroundColor: C.bg }}>
+      <PurpleWash />
+      <AbsoluteFill
+        style={{
+          alignItems: "center",
+          justifyContent: "flex-start",
+          flexDirection: "column",
+          paddingTop: 96,
+        }}
+      >
+
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 56,
+            fontWeight: 800,
+            letterSpacing: "-2px",
+            color: C.text,
+            textAlign: "center",
+            lineHeight: 1.05,
+            marginTop: 18,
+            maxWidth: 900,
+            opacity: headOpacity,
+            transform: `translateY(${headY}px)`,
+          }}
+        >
+          Your code pushes. We handle the rest.
+        </div>
+
+        {/* Timeline */}
+        <div
+          style={{
+            position: "relative",
+            width: 800,
+            height: 620,
+            marginTop: 36,
+          }}
+        >
+          {/* Vertical line */}
+          <div
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: 0,
+              transform: "translateX(-50%)",
+              width: 2,
+              height: lineHeight,
+              backgroundColor: "rgba(144,90,246,0.20)",
+            }}
+          />
+
+          {/* Nodes */}
+          {NODE_Y.map((y, i) => (
+            <div
+              key={`node-${i}`}
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: y,
+                width: 48,
+                height: 48,
+                borderRadius: "50%",
+                backgroundColor: "rgba(12,11,18,0.98)",
+                border: "1px solid rgba(144,90,246,0.40)",
+                boxShadow: "0 0 0 6px rgba(3,3,5,0.9)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontFamily: MONO,
+                fontSize: 15,
+                fontWeight: 700,
+                color: C.accent,
+                transform: `translate(-50%, -50%) scale(${nodeScale(i)})`,
+                zIndex: 2,
+              }}
+            >
+              {`0${i + 1}`}
+            </div>
+          ))}
+
+          {/* Card 1 — git push */}
+          <div style={cardStyle(0)}>
+            <div
+              style={{
+                fontFamily: MONO,
+                fontSize: 15,
+                fontWeight: 600,
+                color: C.accent,
+              }}
+            >
+              git push origin main
+            </div>
+            <div style={body}>
+              Localesy detects your changes automatically on every push.
+            </div>
+            <div
+              style={{
+                fontFamily: FONT,
+                fontSize: 14,
+                fontWeight: 700,
+                color: C.green,
+                marginTop: 14,
+              }}
+            >
+              ✓ 12 new keys found
+            </div>
+          </div>
+
+          {/* Card 2 — Diff Engine */}
+          <div style={cardStyle(1)}>
+            <div
+              style={{
+                fontFamily: FONT,
+                fontSize: 18,
+                fontWeight: 800,
+                color: "#ffffff",
+              }}
+            >
+              Diff Engine™
+            </div>
+            <div style={body}>
+              Smart conflict resolution — every key tracked, every change
+              versioned.
+            </div>
+            <div
+              style={{
+                marginTop: 14,
+                backgroundColor: "rgba(0,0,0,0.35)",
+                borderRadius: "8px",
+                padding: "10px 14px",
+                fontFamily: MONO,
+                fontSize: 12,
+                lineHeight: 1.8,
+              }}
+            >
+              <div style={{ color: C.green }}>+ "hero.cta": "Get started"</div>
+              <div style={{ color: C.red }}>- "hero.cta": "Start now"</div>
+            </div>
+          </div>
+
+          {/* Card 3 — PR ready */}
+          <div style={cardStyle(2)}>
+            <div
+              style={{
+                fontFamily: FONT,
+                fontSize: 15,
+                fontWeight: 600,
+                color: "#ffffff",
+              }}
+            >
+              #47 feat: update translations
+            </div>
+            <div
+              style={{
+                display: "flex",
+                gap: 6,
+                marginTop: 10,
+                flexWrap: "wrap",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: FONT,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: "1.5px",
+                  borderRadius: "6px",
+                  padding: "4px 10px",
+                  color: C.accent,
+                  backgroundColor: "rgba(144,90,246,0.12)",
+                }}
+              >
+                translations
+              </span>
+              <span
+                style={{
+                  fontFamily: FONT,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: "1.5px",
+                  borderRadius: "6px",
+                  padding: "4px 10px",
+                  backgroundColor: "rgba(255,255,255,0.06)",
+                  color: "rgba(255,255,255,0.50)",
+                }}
+              >
+                auto-generated
+              </span>
+              <span
+                style={{
+                  fontFamily: FONT,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: "1.5px",
+                  borderRadius: "6px",
+                  padding: "4px 10px",
+                  color: C.green,
+                  backgroundColor: "rgba(34,197,94,0.08)",
+                }}
+              >
+                ✓ merge-ready
+              </span>
+            </div>
+            <div
+              style={{
+                fontFamily: FONT,
+                fontSize: 12,
+                color: "rgba(255,255,255,0.35)",
+                marginTop: 12,
+              }}
+            >
+              2 files changed · +47 −3
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 16,
+            color: "rgba(255,255,255,0.40)",
+            letterSpacing: "0.2px",
+            marginTop: 8,
+            textAlign: "center",
+            opacity: tagOpacity,
+          }}
+        >
+        </div>
+      </AbsoluteFill>
+
+      <Vignette />
+      <GrainOverlay opacity={0.032} />
+    </AbsoluteFill>
+  );
+};
+</file>
+
+<file path="src/scenes/PainV2Scene.tsx">
+import React from "react";
+import {
+  AbsoluteFill,
+  interpolate,
+  spring,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
+import { C, FONT } from "./shared/theme";
+import { PurpleWash } from "./shared/PurpleWash";
+import { Vignette } from "./shared/Vignette";
+import { GrainOverlay } from "../components/GrainOverlay";
+
+const BLOCKS = [
+  {
+    num: "01",
+    headline: "Translations management gives you a headache.",
+    start: 18,
+  },
+  {
+    num: "02",
+    headline: "Generated translations feel and sound robotic.",
+    start: 68,
+  },
+  {
+    num: "03",
+    headline: "Your team finds even the top tools hard to use.",
+    start: 118,
+  },
+];
+
+const PainBlock: React.FC<(typeof BLOCKS)[number]> = ({
+  num,
+  headline,
+  body,
+  start,
+}) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  const numOpacity = interpolate(frame, [start, start + 10], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const headSpring = spring({
+    frame: frame - (start + 6),
+    fps,
+    config: { damping: 13, stiffness: 80 },
+  });
+  const bodyOpacity = interpolate(
+    frame,
+    [start + 14, start + 30],
+    [0, 1],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
+  );
+
+  return (
+    <div
+      style={{
+        position: "relative",
+        maxWidth: 860,
+        textAlign: "center",
+        margin: "26px 0",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          left: -24,
+          top: "20%",
+          bottom: "20%",
+          width: "3px",
+          borderRadius: "2px",
+          backgroundColor: C.accent,
+          opacity: numOpacity,
+        }}
+      />
+      <div
+        style={{
+          fontFamily: FONT,
+          fontSize: 12,
+          fontWeight: 700,
+          letterSpacing: "4px",
+          color: C.accent,
+          opacity: numOpacity,
+          marginBottom: 14,
+        }}
+      >
+        {num}
+      </div>
+      <div
+        style={{
+          fontFamily: FONT,
+          fontSize: 44,
+          fontWeight: 800,
+          color: C.text,
+          letterSpacing: "-1.5px",
+          opacity: interpolate(headSpring, [0, 1], [0, 1]),
+          transform: `translateY(${interpolate(
+            headSpring,
+            [0, 1],
+            [36, 0]
+          )}px)`,
+        }}
+      >
+        {headline}
+      </div>
+      <div
+        style={{
+          fontFamily: FONT,
+          fontSize: 19,
+          fontWeight: 400,
+          color: "rgba(255,255,255,0.52)",
+          lineHeight: 1.65,
+          marginTop: 16,
+          opacity: bodyOpacity,
+        }}
+      >
+        {body}
+      </div>
+    </div>
+  );
+};
+
+export const PainV2Scene: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  const labelOpacity = interpolate(frame, [0, 14], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  // Group fade-out at frame 152
+  const groupOpacity = interpolate(frame, [146, 170], [1, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const groupY = interpolate(frame, [146, 170], [0, -8], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  // Closing lines
+  const line1Spring = spring({
+    frame: frame - 170,
+    fps,
+    config: { damping: 60, stiffness: 60 },
+  });
+  const line2Spring = spring({
+    frame: frame - 178,
+    fps,
+    config: { damping: 50, stiffness: 55 },
+  });
+
+  return (
+    <AbsoluteFill style={{ backgroundColor: C.bg }}>
+      <PurpleWash />
+      <AbsoluteFill
+        style={{
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+        }}
+      >
+        {frame < 172 && (
+          <div
+            style={{
+              opacity: groupOpacity,
+              transform: `translateY(${groupY}px)`,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <div
+              style={{
+                fontFamily: FONT,
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: "5px",
+                color: "rgba(255, 252, 252, 0.22)",
+                opacity: labelOpacity,
+                marginBottom: 18,
+              }}
+            >
+              KNOW THAT FEELING?
+            </div>
+            {BLOCKS.map((b) => (
+              <PainBlock key={b.num} {...b} />
+            ))}
+          </div>
+        )}
+
+        {frame >= 167 && (
+          <div
+            style={{
+              textAlign: "center",
+              opacity: interpolate(frame, [167, 182], [0, 1], {
+                extrapolateLeft: "clamp",
+                extrapolateRight: "clamp",
+              }),
+            }}
+          >
+            <div
+              style={{
+                fontFamily: FONT,
+                fontSize: 34,
+                fontWeight: 400,
+                color: "rgba(255,255,255,0.48)",
+                letterSpacing: "-0.5px",
+                opacity: interpolate(line1Spring, [0, 1], [0, 1]),
+                transform: `translateY(${interpolate(
+                  line1Spring,
+                  [0, 1],
+                  [32, 0]
+                )}px)`,
+              }}
+            >
+              We felt it many times.
+            </div>
+            <div
+              style={{
+                fontFamily: FONT,
+                fontSize: 78,
+                fontWeight: 800,
+                color: C.accent,
+                letterSpacing: "-3.5px",
+                marginTop: 12,
+                opacity: interpolate(line2Spring, [0, 1], [0, 1]),
+                transform: `translateY(${interpolate(
+                  line2Spring,
+                  [0, 1],
+                  [40, 0]
+                )}px) scale(${interpolate(line2Spring, [0, 1], [0.92, 1])})`,
+              }}
+            >
+              We said no more.
+            </div>
+          </div>
+        )}
+      </AbsoluteFill>
+
+      <Vignette />
+      <GrainOverlay opacity={0.032} />
+    </AbsoluteFill>
+  );
+};
+</file>
+
 <file path="src/scenes/UseCasesBentoScene.tsx">
 import React from "react";
 import {
@@ -3317,14 +3309,14 @@ export const UseCasesBentoScene: React.FC = () => {
               style={{
                 position: "absolute",
                 top: 40,
-                left: "50%",
-                transform: "translateX(-50%)",
-                width: 280,
+                left: 32,
+                width: 340,
                 height: 140,
                 backgroundColor: "rgba(0,0,0,0.6)",
                 borderRadius: "10px",
                 border: "1px solid rgba(255,255,255,0.08)",
                 overflow: "hidden",
+                boxShadow: "0 0 40px rgba(144,90,246,0.12)",
               }}
             >
               <div
@@ -3404,6 +3396,12 @@ export const UseCasesBentoScene: React.FC = () => {
                 height: 200,
               }}
             >
+              <div
+                style={{
+                  borderRadius: "50%",
+                  boxShadow: "0 0 40px rgba(144,90,246,0.12)",
+                }}
+              >
               <svg width="200" height="200" viewBox="0 0 200 200">
                 <circle cx="100" cy="100" r="90" fill="rgba(144,90,246,0.08)" />
                 {[40, 70, 100, 130, 160].map((cy) => (
@@ -3431,6 +3429,7 @@ export const UseCasesBentoScene: React.FC = () => {
                   />
                 ))}
               </svg>
+              </div>
             </div>
             {FLAGS.map((f, i) => {
               const y = interpolate(
@@ -3478,7 +3477,12 @@ export const UseCasesBentoScene: React.FC = () => {
               width="100%"
               height="200"
               viewBox="0 0 420 200"
-              style={{ position: "absolute", top: 20, left: 0 }}
+              style={{
+                position: "absolute",
+                top: 20,
+                left: 0,
+                boxShadow: "0 0 40px rgba(144,90,246,0.12)",
+              }}
             >
               <line
                 x1="60"
@@ -3627,6 +3631,7 @@ export const UseCasesBentoScene: React.FC = () => {
                       fontWeight: 800,
                       fontSize: 18,
                       color: C.accent,
+                      boxShadow: "0 0 40px rgba(144,90,246,0.12)",
                     }}
                   >
                     L
@@ -3717,7 +3722,7 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id="LocalesyLaunchV2"
         component={LocalesyLaunchV2}
-        durationInFrames={1725}
+        durationInFrames={1785}
         fps={30}
         width={1920}
         height={1080}

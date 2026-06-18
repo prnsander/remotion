@@ -132,25 +132,25 @@ export const PainV2Scene: React.FC = () => {
   });
 
   // Group fade-out at frame 152
-  const groupOpacity = interpolate(frame, [152, 164], [1, 0], {
+  const groupOpacity = interpolate(frame, [146, 170], [1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const groupY = interpolate(frame, [152, 164], [0, -28], {
+  const groupY = interpolate(frame, [146, 170], [0, -20], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
   // Closing lines
   const line1Spring = spring({
-    frame: frame - 164,
+    frame: frame - 170,
     fps,
-    config: { damping: 14, stiffness: 90 },
+    config: { damping: 80, stiffness: 60 },
   });
   const line2Spring = spring({
-    frame: frame - 172,
+    frame: frame - 178,
     fps,
-    config: { damping: 12, stiffness: 100 },
+    config: { damping: 70, stiffness: 65 },
   });
 
   return (
@@ -163,7 +163,7 @@ export const PainV2Scene: React.FC = () => {
           flexDirection: "column",
         }}
       >
-        {frame < 164 && (
+        {frame < 172 && (
           <div
             style={{
               opacity: groupOpacity,
@@ -192,8 +192,16 @@ export const PainV2Scene: React.FC = () => {
           </div>
         )}
 
-        {frame >= 160 && (
-          <div style={{ textAlign: "center" }}>
+        {frame >= 167 && (
+          <div
+            style={{
+              textAlign: "center",
+              opacity: interpolate(frame, [167, 182], [0, 1], {
+                extrapolateLeft: "clamp",
+                extrapolateRight: "clamp",
+              }),
+            }}
+          >
             <div
               style={{
                 fontFamily: FONT,

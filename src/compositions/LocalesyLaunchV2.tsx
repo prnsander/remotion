@@ -45,9 +45,16 @@ const TRANSITIONS: {
   durationInFrames: number;
   timing?: TransitionTiming;
 }[] = [
-  { presentation: slide({ direction: "from-right" }), durationInFrames: 18 }, // Hero → Pain
+  {
+    presentation: slide({ direction: "from-right" }),
+    durationInFrames: 22,
+    timing: springTiming({
+      config: { damping: 40, stiffness: 90 },
+      durationInFrames: 22,
+    }),
+  }, // Hero → Pain
   { presentation: fade(), durationInFrames: 20 }, // Pain → Platform
-  { presentation: slide({ direction: "from-left" }), durationInFrames: 18 }, // Platform → AI
+  { presentation: fade(), durationInFrames: 14 }, // Platform → AI
   { presentation: fade(), durationInFrames: 20 }, // AI → CleanFiles
   { presentation: fade(), durationInFrames: 14 }, // CleanFiles → StatFlash
   { presentation: slide({ direction: "from-bottom" }), durationInFrames: 18 }, // StatFlash → Git

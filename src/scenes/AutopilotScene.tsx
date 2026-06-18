@@ -39,9 +39,9 @@ export const AutopilotScene: React.FC = () => {
   const arrowX = interpolate(frame % 60, [0, 30, 60], [0, 5, 0]);
 
   const illoSpring = spring({
-    frame: frame - 28,
+    frame: frame - 72,
     fps,
-    config: { damping: 16, stiffness: 70 },
+    config: { damping: 16, stiffness: 80 },
   });
   const illoX = interpolate(illoSpring, [0, 1], [100, 0]);
 

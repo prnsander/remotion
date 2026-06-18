@@ -150,14 +150,14 @@ export const UseCasesBentoScene: React.FC = () => {
               style={{
                 position: "absolute",
                 top: 40,
-                left: "50%",
-                transform: "translateX(-50%)",
-                width: 280,
+                left: 32,
+                width: 340,
                 height: 140,
                 backgroundColor: "rgba(0,0,0,0.6)",
                 borderRadius: "10px",
                 border: "1px solid rgba(255,255,255,0.08)",
                 overflow: "hidden",
+                boxShadow: "0 0 40px rgba(144,90,246,0.12)",
               }}
             >
               <div
@@ -237,6 +237,11 @@ export const UseCasesBentoScene: React.FC = () => {
                 height: 200,
               }}
             >
+              <div
+                style={{
+                  borderRadius: "50%",
+                }}
+              >
               <svg width="200" height="200" viewBox="0 0 200 200">
                 <circle cx="100" cy="100" r="90" fill="rgba(144,90,246,0.08)" />
                 {[40, 70, 100, 130, 160].map((cy) => (
@@ -264,6 +269,7 @@ export const UseCasesBentoScene: React.FC = () => {
                   />
                 ))}
               </svg>
+              </div>
             </div>
             {FLAGS.map((f, i) => {
               const y = interpolate(
@@ -311,7 +317,11 @@ export const UseCasesBentoScene: React.FC = () => {
               width="100%"
               height="200"
               viewBox="0 0 420 200"
-              style={{ position: "absolute", top: 20, left: 0 }}
+              style={{
+                position: "absolute",
+                top: 20,
+                left: 0,
+              }}
             >
               <line
                 x1="60"
