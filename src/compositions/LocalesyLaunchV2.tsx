@@ -9,6 +9,7 @@ import {
 } from "@remotion/transitions";
 import { fade } from "@remotion/transitions/fade";
 import { slide } from "@remotion/transitions/slide";
+import { clockWipe } from "@remotion/transitions/clock-wipe";
 import { HeroV2Scene } from "../scenes/HeroV2Scene";
 import { PainV2Scene } from "../scenes/PainV2Scene";
 import { PlatformScene } from "../scenes/PlatformScene";
@@ -46,10 +47,10 @@ const TRANSITIONS: {
   timing?: TransitionTiming;
 }[] = [
   {
-    presentation: slide({ direction: "from-right" }),
+    presentation: fade(),
     durationInFrames: 22,
     timing: springTiming({
-      config: { damping: 40, stiffness: 90 },
+      config: { damping: 60, stiffness: 60 },
       durationInFrames: 22,
     }),
   }, // Hero → Pain
@@ -57,13 +58,13 @@ const TRANSITIONS: {
   { presentation: fade(), durationInFrames: 14 }, // Platform → AI
   { presentation: fade(), durationInFrames: 20 }, // AI → CleanFiles
   { presentation: fade(), durationInFrames: 14 }, // CleanFiles → StatFlash
-  { presentation: slide({ direction: "from-bottom" }), durationInFrames: 18 }, // StatFlash → Git
+  { presentation: fade(), durationInFrames: 20 }, // StatFlash → Git
   { presentation: fade(), durationInFrames: 16 }, // Git → Bento
   {
-    presentation: slide({ direction: "from-bottom" }),
+    presentation: fade(),
     durationInFrames: 22,
     timing: springTiming({
-      config: { damping: 40, stiffness: 90 },
+      config: { damping: 60, stiffness: 55 },
       durationInFrames: 22,
     }),
   }, // Bento → Autopilot

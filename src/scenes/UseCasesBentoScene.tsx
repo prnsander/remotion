@@ -84,7 +84,7 @@ export const UseCasesBentoScene: React.FC = () => {
 
   const cardAnim = (i: number) => {
     const s = spring({
-      frame: frame - (42 + i * 22),
+      frame: frame - (28 + i * 18),
       fps,
       config: { damping: 14, stiffness: 90 },
     });

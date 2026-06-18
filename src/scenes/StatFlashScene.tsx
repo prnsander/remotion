@@ -89,7 +89,13 @@ export const StatFlashScene: React.FC = () => {
             transform: `scale(${numScale})`,
           }}
         >
-          98%
+          {Math.round(
+            interpolate(frame, [0, 28], [0, 98], {
+              extrapolateLeft: "clamp",
+              extrapolateRight: "clamp",
+            })
+          )}
+          %
         </div>
         <div
           style={{

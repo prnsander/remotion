@@ -230,8 +230,27 @@ export const AITranslationScene: React.FC = () => {
             marginBottom: 40,
           }}
         >
-          <span style={{ ...sourceLabel, marginRight: 12 }}>TRANSLATIONS</span>
-          {LANGS.map((l, i) => (
+          <span
+            style={{
+              ...sourceLabel,
+              marginRight: 12,
+              opacity: interpolate(frame, [44, 56], [0, 1], {
+                extrapolateLeft: "clamp",
+                extrapolateRight: "clamp",
+              }),
+            }}
+          >
+            TRANSLATIONS
+          </span>
+          {LANGS.map((l, i) => {
+            const pillSpring = spring({
+              frame: frame - (44 + i * 7),
+              fps,
+              config: { damping: 18, stiffness: 90 },
+            });
+            const pillX = interpolate(pillSpring, [0, 1], [20, 0]);
+            const pillOpacity = interpolate(pillSpring, [0, 1], [0, 1]);
+            return (
             <div
               key={l.code}
               style={{
@@ -241,6 +260,8 @@ export const AITranslationScene: React.FC = () => {
                 display: "flex",
                 alignItems: "center",
                 gap: 6,
+                opacity: pillOpacity,
+                transform: `translateX(${pillX}px)`,
                 backgroundColor:
                   i === active ? "rgba(144,90,246,0.15)" : "transparent",
                 border: `1px solid ${
@@ -262,7 +283,8 @@ export const AITranslationScene: React.FC = () => {
                 {l.code}
               </span>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* All 5 translated keys for the active language */}
@@ -270,7 +292,7 @@ export const AITranslationScene: React.FC = () => {
           const switchF = 60 + active * 40;
           const rowOpacity = interpolate(
             frame,
-            [switchF, switchF + 14],
+            [switchF, switchF + 22],
             [0, 1],
             { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
           );

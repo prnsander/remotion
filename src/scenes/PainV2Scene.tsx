@@ -38,18 +38,18 @@ const PainBlock: React.FC<(typeof BLOCKS)[number]> = ({
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const numOpacity = interpolate(frame, [start, start + 10], [0, 1], {
+  const numOpacity = interpolate(frame, [start, start + 20], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
   const headSpring = spring({
     frame: frame - (start + 6),
     fps,
-    config: { damping: 13, stiffness: 80 },
+    config: { damping: 18, stiffness: 60 },
   });
   const bodyOpacity = interpolate(
     frame,
-    [start + 14, start + 30],
+    [start + 14, start + 36],
     [0, 1],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
   );
@@ -132,25 +132,13 @@ export const PainV2Scene: React.FC = () => {
   });
 
   // Group fade-out at frame 152
-  const groupOpacity = interpolate(frame, [146, 170], [1, 0], {
+  const groupOpacity = interpolate(frame, [140, 172], [1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const groupY = interpolate(frame, [146, 170], [0, -20], {
+  const groupY = interpolate(frame, [140, 172], [0, -20], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
-  });
-
-  // Closing lines
-  const line1Spring = spring({
-    frame: frame - 170,
-    fps,
-    config: { damping: 80, stiffness: 60 },
-  });
-  const line2Spring = spring({
-    frame: frame - 178,
-    fps,
-    config: { damping: 70, stiffness: 65 },
   });
 
   return (
@@ -163,7 +151,7 @@ export const PainV2Scene: React.FC = () => {
           flexDirection: "column",
         }}
       >
-        {frame < 172 && (
+        {frame < 182 && (
           <div
             style={{
               opacity: groupOpacity,
@@ -192,53 +180,52 @@ export const PainV2Scene: React.FC = () => {
           </div>
         )}
 
-        {frame >= 167 && (
+        <div
+          style={{
+            position: "absolute",
+            textAlign: "center",
+          }}
+        >
           <div
             style={{
-              textAlign: "center",
-              opacity: interpolate(frame, [167, 182], [0, 1], {
+              fontFamily: FONT,
+              fontSize: 34,
+              fontWeight: 400,
+              color: "rgba(255,255,255,0.48)",
+              letterSpacing: "-0.5px",
+              opacity: interpolate(frame, [165, 178], [0, 1], {
                 extrapolateLeft: "clamp",
                 extrapolateRight: "clamp",
               }),
+              transform: `translateY(${interpolate(frame, [165, 178], [32, 0], {
+                extrapolateLeft: "clamp",
+                extrapolateRight: "clamp",
+              })}px)`,
             }}
           >
-            <div
-              style={{
-                fontFamily: FONT,
-                fontSize: 34,
-                fontWeight: 400,
-                color: "rgba(255,255,255,0.48)",
-                letterSpacing: "-0.5px",
-                opacity: interpolate(line1Spring, [0, 1], [0, 1]),
-                transform: `translateY(${interpolate(
-                  line1Spring,
-                  [0, 1],
-                  [32, 0]
-                )}px)`,
-              }}
-            >
-              We felt it many times.
-            </div>
-            <div
-              style={{
-                fontFamily: FONT,
-                fontSize: 78,
-                fontWeight: 800,
-                color: C.accent,
-                letterSpacing: "-3.5px",
-                marginTop: 12,
-                opacity: interpolate(line2Spring, [0, 1], [0, 1]),
-                transform: `translateY(${interpolate(
-                  line2Spring,
-                  [0, 1],
-                  [40, 0]
-                )}px) scale(${interpolate(line2Spring, [0, 1], [0.92, 1])})`,
-              }}
-            >
-              We said no more.
-            </div>
+            We felt it many times.
           </div>
-        )}
+          <div
+            style={{
+              fontFamily: FONT,
+              fontSize: 78,
+              fontWeight: 800,
+              color: C.accent,
+              letterSpacing: "-3.5px",
+              marginTop: 12,
+              opacity: interpolate(frame, [173, 186], [0, 1], {
+                extrapolateLeft: "clamp",
+                extrapolateRight: "clamp",
+              }),
+              transform: `translateY(${interpolate(frame, [173, 186], [32, 0], {
+                extrapolateLeft: "clamp",
+                extrapolateRight: "clamp",
+              })}px)`,
+            }}
+          >
+            We said no more.
+          </div>
+        </div>
       </AbsoluteFill>
 
       <Vignette />
